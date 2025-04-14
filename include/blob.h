@@ -5,6 +5,6 @@
 #include "constants.h"
 #include "string.h"
 
-char* get_blob_path(const char* blob_id);
+char* blob_get_path(const char* blob_id);
 
 #endif

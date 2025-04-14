@@ -29,8 +29,6 @@ typedef struct hash_map{
     hash_node* buckets[JVC_HASHMAP_SIZE];
 } hash_map;
 
-
-
 unsigned int hash(const char* key);
 
 /*creates an instance of a hash map*/
@@ -45,8 +43,10 @@ char* hash_map_get(hash_map* map,const char* key);
 /*frees the memory allocated for the hash_map*/
 void free_hash_map(hash_map* map);
 
-char *serialize_hash_map_to_binary(hash_map *map, size_t *binary_size);
+char* serialize_hash_map_to_binary(hash_map *map, size_t *binary_size);
 
-hash_map *deserialize_hash_map_from_binary(const char *binary_data, size_t binary_size);
+hash_map* deserialize_hash_map_from_binary(const char *binary_data, size_t binary_size);
+
+void map_get_difference(hash_map* first, hash_map* second, char** only_first, size_t* only_first_size, char** only_second, size_t* only_second_size, char** both_present, size_t* both_present_size);
 
 #endif

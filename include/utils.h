@@ -10,6 +10,7 @@
 #include "global.h"
 #include "constants.h"
 #include <stdbool.h>
+#include "structures.h"
 
 /*get the sha256 hash of a file in zip*/
 char* sha256_zip_file(const char* zip_filename, const char* file_in_zip);
@@ -38,5 +39,7 @@ void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,si
 bool file_exists_inzip_ng(struct zip* archive,const char* file_path);
 
 void delete_folder_inzip_ng(struct zip* archive,const char* folder_path);
+
+hash_map* iterate_zip(struct zip* archive);
 
 #endif

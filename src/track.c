@@ -58,7 +58,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 
 void track(struct zip* archive, size_t flags,char ***option_values, int *option_counts){
     bool is_archive_being_tracked = is_already_initialized(archive);
-    if ((is_archive_being_tracked) && !(flags & __TRACK_FLAG_FORCE__)){
+    if ((is_archive_being_tracked) && !(flags & (1 << 2))){
         printf("archive is already being tracked\n");
         return;
     }
@@ -74,12 +74,13 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
     size_t map_size = 0;
 
-    char* serialized_map = serialize_hash_map_to_binary(map_path_hash,&map_size);
+    //write the map_path_hash to both index and tree
+    //char* serialized_map = serialize_hash_map_to_binary(map_path_hash,&map_size);
 
     for (int i=0;i<JVC_HASHMAP_SIZE;++i){
         hash_node* node = map_path_hash->buckets[i];
         while(node){
-            char* path = get_blob_path(node->value);
+            char* path = blob_get_path(node->value);
 
             copy_file_inzip_ng(archive,node->key,path);
 
@@ -103,18 +104,22 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
     commit_blob->id = sha256_string(commit_generator->data,commit_generator->sz);
     commit_blob->parent = NULL;
     commit_blob->tree = tree_blob;
-    commit_blob->message = "DEFAULT";
+    commit_blob->message = option_values['m'-'a'][0];
+
+    //printf("commit message is: %s\n",commit_blob->message);
 
     // printf("tree hash: %s\n",tree_blob->id);
     // printf("commit hash: %s\n",commit_blob->id);
 
     commit_add_blob(archive,commit_blob);
+    tree_add_blob(archive,tree_blob);
+    write_to_file_inzip_ng(archive,JVC_BASE JVC_HEAD,commit_blob->id,strlen(commit_blob->id));
 }
 
 /*checks if head and index are already present*/
-void show_usage(){
+void show_track_usage(){
     printf("usage: "__TRACK_HELP__"\n\n");
-    printf("Following are the available options:\n");
+    printf("Following are the available flags and arguments:\n");
     
     for (int i=0;i<sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
         printf("  %-10s: %s\n", track_option_names[i], track_option_descriptions[i]);
@@ -137,9 +142,11 @@ hash_map* load_options(){
 }
 
 void process_track(int argc,char** argv){
-    if (argc == 3){
+    if (argc == 2){
+        show_track_usage();
+    } if (argc == 3){
         if (strcmp(argv[2],"--h") == 0 || strcmp(argv[2],"--help") == 0){
-            show_usage();
+            show_track_usage();
             return;
         }
     }
@@ -172,11 +179,11 @@ void process_track(int argc,char** argv){
     processArgs(argc,argv, &flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
     if (((command_flags) && (1<<2)) == 1){
-        show_usage();
+        show_track_usage();
         return;
     } else if (args_error_status != 0){
         printf("%s\n",error_message);
-        show_usage();
+        show_track_usage();
         return;
     } else if (zip_open_error == ZIP_ER_NOENT){
         printf("error: the archive %s not found\n",argv[2]);
@@ -199,11 +206,11 @@ void process_track(int argc,char** argv){
     //     //printf("check for arg: %s\n",argv[i]);
     //     if (i != argc-1 && (options_map,argv[i]) == NULL){
     //         printf("error: unknown option: %s\n",argv[i]);
-    //         show_usage();
+    //         show_track_usage();
     //         return;
     //     }
     //     if (strcmp("--help",argv[i]) == 0 || strcmp("-h",argv[i]) == 0){
-    //         show_usage();
+    //         show_track_usage();
     //         return;
     //     } else if (strcmp("--force",argv[i]) == 0 || strcmp("-f",argv[i]) == 0){
     //         flags = flags | __TRACK_FLAG_FORCE__;
@@ -225,5 +232,7 @@ void process_track(int argc,char** argv){
     // }
 
     track(archive,command_flags,options_array,options_sizes);
+
+    zip_close(archive);
     return;
 }

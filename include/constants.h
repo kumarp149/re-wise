@@ -41,4 +41,14 @@ and a pointer to a tree file*/
 
 #define JVC_HASH_GENERATOR_SUFFIX "TRAILER"
 
+#define JVC_COLOR_GREEN_START "[0;32m"
+
+#define JVC_COLOR_START "\033"
+
+#define JVC_COLOR_END "\033[0m"
+
+#define JVC_COLOR_YELLOW_START "[0;33m"
+
+#define JVC_COLOR_RED_START "[0;31m"
+
 #endif

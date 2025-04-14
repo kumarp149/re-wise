@@ -64,6 +64,8 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
                 countArgs++;
             }
 
+            //printf("character: %s, size: %d\n",cur_valarg->shortId,option_counts[index]);
+
             start--;
 
             //till start is the values for the valarg
@@ -75,7 +77,12 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
                 return;
             } else if (cur_valarg->mandatory == true && countArgs <= 0){
                 *err = 1;
-                sprintf(*error_message,"error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                if (cur_valarg->maxCount == 1){
+                    sprintf(*error_message,"error: option <%s> expects an argument",cur_valarg->short_description);
+                } else{
+                    sprintf(*error_message,"error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                }
+                
                 return;
             }
         } else{
@@ -89,7 +96,9 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
     }
 
     for (int i=0;i<valargs_size;++i){
-        if ((valargs+i)->mandatory == true && *(option_counts + (*(valargs+i)->shortId)-'a')){
+        char *c = ((valargs+i)->shortId) + 1;
+        // printf("char: %c, mandatory?: %d\n",*c,(valargs+i)->mandatory);
+        if ((valargs+i)->mandatory == true && *(option_counts + (*c - 'a')) == 0){
             *err = 1;
             sprintf(*error_message,"error: the argument <%s> is mandatory",(valargs+i)->short_description);
             return;

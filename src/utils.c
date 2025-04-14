@@ -253,9 +253,9 @@ void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,si
     //printf("calling write_to_file_inzip_ng\n");
     struct zip_source* source = zip_source_buffer(archive, content, sz, 0);
 
-    printf("adding file: %s\n",file_path);
+    // printf("adding file: %s\n",file_path);
 
-    printf("source created\n");
+    // printf("source created\n");
 
     if (!source){
         printf("unable to create zip source\n");
@@ -268,7 +268,7 @@ void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,si
         printf("File added to zip successfully: %s\n",file_path);
     }
 
-    printf("added content to file: %s\n",file_path);
+    // printf("added content to file: %s\n",file_path);
 
     zip_source_close(source);
 }
@@ -314,4 +314,26 @@ void delete_folder_inzip_ng(struct zip* archive,const char* folder_path){
             }
         }
     }
+}
+
+hash_map* iterate_zip(struct zip* archive){
+    zip_int64_t num_entries = zip_get_num_entries(archive, 0);
+
+    hash_map* map_current_state = create_hash_map();
+
+    for (int i=0;i<num_entries;++i){
+        const char *name = zip_get_name(archive, i, 0);
+
+        if (name && strncmp(name, JVC_BASE, strlen(JVC_BASE)) == 0){
+            continue;
+        } else{
+            zip_file_t* file = zip_fopen(archive,name,0);
+            char* file_hash = sha256_zip_file_ng(file);
+            hash_map_insert(map_current_state,name,file_hash);
+            
+            zip_fclose(file);
+        }
+    }
+
+    return map_current_state;
 }

@@ -1,6 +1,6 @@
 #include "../include/blob.h"
 
-char* get_blob_path(const char* blob_id){
+char* blob_get_path(const char* blob_id){
     size_t blob_path_size = strlen(JVC_BASE) + strlen(JVC_BLOBS) + strlen(blob_id) + 1;
 
     size_t sz = 0;

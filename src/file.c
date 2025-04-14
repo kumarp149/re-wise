@@ -4,6 +4,7 @@
 #include "../include/utils.h"
 //#include "../include/structures.h"
 #include "../include/track.h"
+#include "../include/status.h"
 #define BUFFER_SIZE 8192
 
 
@@ -14,5 +15,7 @@ int main(int argc,char** argv) {
     if (strcmp(argv[1],"track") == 0){
         //printf("argv[1] is track\n");
         process_track(argc,argv);
+    } else if (strcmp(argv[1],"status") == 0){
+        process_status(argc,argv);
     }
 }

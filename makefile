@@ -1,5 +1,5 @@
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
-		  bin/tree.o bin/blob.o bin/args.o
+		  bin/tree.o bin/blob.o bin/args.o bin/status.o
 CC = gcc
 LIB = -L/opt/homebrew/Cellar/openssl@3/3.4.1/lib/ -L/opt/homebrew/Cellar/libzip/1.11.3/lib/ -lzip \
 	  -lssl -lcrypto
@@ -13,7 +13,7 @@ a.out: $(objects)
 bin/structures.o: src/structures.c include/structures.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
-bin/utils.o: src/utils.c include/utils.h include/constants.h include/global.h
+bin/utils.o: src/utils.c include/utils.h include/constants.h include/global.h include/structures.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
 bin/track.o: src/track.c include/track.h include/structures.h include/sha256.h include/timer.h include/commit.h \
@@ -32,7 +32,8 @@ bin/timer.o: src/timer.c include/timer.h
 bin/commit.o: src/commit.c include/commit.h include/tree.h include/utils.h include/blob.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
-bin/tree.o: src/tree.c include/tree.h include/constants.h include/structures.h
+bin/tree.o: src/tree.c include/tree.h include/structures.h include/constants.h \
+			include/blob.h include/utils.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
 bin/blob.o: src/blob.c include/blob.h include/constants.h
@@ -41,3 +42,5 @@ bin/blob.o: src/blob.c include/blob.h include/constants.h
 bin/args.o: src/args.c include/args.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
+bin/status.o: src/status.c include/status.h include/constants.h include/args.h include/commit.h
+	$(CC) -g -c $< $(INC) $(LIB) -o $@
