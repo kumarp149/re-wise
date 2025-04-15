@@ -28,21 +28,17 @@ char* sha256_string(const char* str, size_t sz) {
 struct sha256_generator* sha256_create_new_generator(){
     struct sha256_generator* generator = (struct sha256_generator*) malloc(sizeof(struct sha256_generator));
 
-    generator->data = (char *)malloc(sizeof(char)*JVC_HASH_GENERATOR_SIZE);
+    generator->data = (char *)malloc(sizeof(char)*__CONSTANTS_HASH_GENERATOR_SIZE__);
 
     generator->sz = 0;
 
-    //printf("size of hash_generator before: %d\n",generator->sz);
-
-    sha256_update_content(generator,JVC_HASH_GENERATOR_PREFIX,strlen(JVC_HASH_GENERATOR_PREFIX));
-
-    //printf("size of hash_generator after: %d\n",generator->sz);
+    sha256_update_content(generator,__CONSTANTS_RW_HASH_GENERATOR_PREFIX__,strlen(__CONSTANTS_RW_HASH_GENERATOR_PREFIX__));
 
     return generator;
 }
 
 void sha256_update_content(struct sha256_generator* generator,char* content,size_t sz){
-    size_t bytes_left = JVC_HASH_GENERATOR_SIZE - generator->sz;
+    size_t bytes_left = __CONSTANTS_HASH_GENERATOR_SIZE__ - generator->sz;
     if (bytes_left <= 0){
         return;
     } else if (bytes_left >= sz){

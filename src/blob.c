@@ -1,19 +1,19 @@
 #include "../include/blob.h"
 
 char* blob_get_path(const char* blob_id){
-    size_t blob_path_size = strlen(JVC_BASE) + strlen(JVC_BLOBS) + strlen(blob_id) + 1;
+    size_t blob_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(blob_id) + 1;
 
     size_t sz = 0;
 
     char* blob_path = (char *)malloc(sizeof(char) * blob_path_size);
 
-    memcpy(blob_path + sz,JVC_BASE,strlen(JVC_BASE));
+    memcpy(blob_path + sz,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
 
-    sz += strlen(JVC_BASE);
+    sz += strlen(__CONSTANTS_RW_BASE__);
 
-    memcpy(blob_path + sz,JVC_BLOBS,strlen(JVC_BLOBS));
+    memcpy(blob_path + sz,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
 
-    sz += strlen(JVC_BLOBS);
+    sz += strlen(__CONSTANTS_RW_BLOBS__);
 
     memcpy(blob_path + sz,blob_id,2);
 

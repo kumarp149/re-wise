@@ -6,7 +6,7 @@
 #include "args.h"
 #include "commit.h"
 
-#define __STATUS_HELP__ JVC_PGM_NAME " status <archive> <arg> <val>"
+#define __STATUS_HELP__ __CONSTANTS_RW_PGMNAME__ " status <archive> <arg> <val>"
 
 #define __STATUS_FLAGS__ \
   X("--help","-h" , "help","display this usage", (1<<2)) \

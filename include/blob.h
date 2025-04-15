@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "string.h"
 
+/*free the returned pointer after usage*/
 char* blob_get_path(const char* blob_id);
 
 #endif

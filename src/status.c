@@ -72,6 +72,7 @@ void process_status(int argc,char** argv){
 
     struct hash_map* hash_map_current_state = iterate_zip(archive);
 
+    /*free all the below three*/
     char** only_current = (char **)malloc(sizeof(char *)*1000);
     char** only_index = (char **)malloc(sizeof(char *)*1000);
     char** both = (char **) malloc(sizeof(char *)*1000);
@@ -89,17 +90,17 @@ void process_status(int argc,char** argv){
         printf("following files have been deleted\n");
 
         for (int i=0;i<only_index_size;++i){
-            printf(JVC_COLOR_START JVC_COLOR_RED_START "   %s\n" JVC_COLOR_END,only_index[i]);
+            printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
         }
     }
 
     if (only_current_size > 0){
         does_changes_exist = true;
         printf(__STATUS_CREATED__ "\n");
-        //printf(JVC_COLOR_START JVC_COLOR_GREEN_START __STATUS_CREATED__ JVC_COLOR_END "\n");
+        //printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ __STATUS_CREATED__ __CONSTANTS_RW_COLOR_END__ "\n");
 
         for (int i=0;i<only_current_size;++i){
-            printf(JVC_COLOR_START JVC_COLOR_GREEN_START "   %s\n" JVC_COLOR_END,only_current[i]);
+            printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
         }
     }
 
@@ -109,7 +110,7 @@ void process_status(int argc,char** argv){
 
         for (int i=0;i<both_size;++i){
             if (strcmp(hash_map_get(head_commit_obj->tree,both[i]),hash_map_get(hash_map_current_state,both[i])) != 0){
-                printf(JVC_COLOR_START JVC_COLOR_YELLOW_START "   %s\n" JVC_COLOR_END,both[i]);
+                printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s\n" __CONSTANTS_RW_COLOR_END__,both[i]);
             }
         }
     }

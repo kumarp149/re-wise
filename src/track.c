@@ -13,7 +13,7 @@ const char* track_option_descriptions[] = {
 };
 
 bool is_already_initialized(struct zip* archive){
-    if (file_exists_inzip_ng(archive,JVC_BASE JVC_HEAD) && file_exists_inzip_ng(archive,JVC_BASE JVC_INDEX)) return true;
+    if (file_exists_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__) && file_exists_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_INDEX__)) return true;
     return false;
 }
 
@@ -25,7 +25,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
     for (zip_int64_t i = num_entries - 1; i >= 0; i--){
         const char *name = zip_get_name(archive, i, 0);
 
-        if (name && strncmp(name, JVC_BASE, strlen(JVC_BASE)) == 0){
+        if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
             zip_delete(archive, i);
         } else{
 
@@ -37,18 +37,18 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 
             char* time = timer_timestamp();
 
-            sha256_update_content(tree_generator,JVC_HASH_GENERATOR_DELIMITER,strlen(JVC_HASH_GENERATOR_DELIMITER));
+            sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(tree_generator,name,strlen(file_hash));
-            sha256_update_content(tree_generator,JVC_HASH_GENERATOR_DELIMITER,strlen(JVC_HASH_GENERATOR_DELIMITER));
+            sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(tree_generator,time,strlen(time));
 
             time = timer_timestamp();
 
-            sha256_update_content(commit_generator,JVC_HASH_GENERATOR_DELIMITER,strlen(JVC_HASH_GENERATOR_DELIMITER));
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,name,strlen(file_hash));
-            sha256_update_content(commit_generator,JVC_HASH_GENERATOR_DELIMITER,strlen(JVC_HASH_GENERATOR_DELIMITER));
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,name,strlen(name));
-            sha256_update_content(commit_generator,JVC_HASH_GENERATOR_DELIMITER,strlen(JVC_HASH_GENERATOR_DELIMITER));
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,time,strlen(time));
         }
     }
@@ -113,7 +113,7 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
     commit_add_blob(archive,commit_blob);
     tree_add_blob(archive,tree_blob);
-    write_to_file_inzip_ng(archive,JVC_BASE JVC_HEAD,commit_blob->id,strlen(commit_blob->id));
+    write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
 }
 
 /*checks if head and index are already present*/

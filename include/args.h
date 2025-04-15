@@ -30,6 +30,13 @@ struct args_valarg{
     int maxCount;
 };
 
+/*
+free the following variables later
+flags
+valargs
+option_values
+error_message
+*/
 void processArgs(int argc,char** argv,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,zip_t** archive,int* archive_open_error,int* flag,char ***option_values, int *option_counts,int* err,char** error_message);
 
 #endif

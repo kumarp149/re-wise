@@ -324,7 +324,7 @@ hash_map* iterate_zip(struct zip* archive){
     for (int i=0;i<num_entries;++i){
         const char *name = zip_get_name(archive, i, 0);
 
-        if (name && strncmp(name, JVC_BASE, strlen(JVC_BASE)) == 0){
+        if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
             continue;
         } else{
             zip_file_t* file = zip_fopen(archive,name,0);

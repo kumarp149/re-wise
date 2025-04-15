@@ -18,7 +18,7 @@
 
 /*track takes only options (which are basically indicators) and the archive name*/
 
-#define __TRACK_HELP__ JVC_PGM_NAME " track <archive> <flags> <arg> <value>"
+#define __TRACK_HELP__ __CONSTANTS_RW_PGMNAME__ " track <archive> <flags> <arg> <value>"
 
 #define __TRACK_FLAGS__ \
   X("--force", "-f", "force", "flag to force re-init the archive", (1<<1)) \
