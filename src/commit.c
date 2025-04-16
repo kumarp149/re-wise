@@ -64,9 +64,14 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     write_to_file_inzip_ng(archive,blob_path,blob_content,size_filled);
 
-    free(blob_path);
-    free(blob_content);
-
+    if (blob_path){
+        free(blob_path);
+        blob_path = NULL;
+    }
+    if (blob_content){
+        free(blob_content);
+        blob_content = NULL;
+    }
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -140,8 +145,33 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         }
     }
 
-    if (line) free(line);
-    if (prefix) free(prefix);
+    if (line){
+        free(line);
+        line = NULL;
+    }
+    if (prefix){
+        free(prefix);
+        prefix = NULL;
+    }
 
     return commit;
+}
+
+void commit_free(struct jvc_commit** commit){
+    if (commit && *commit){
+        if ((*commit)->id){
+            free((*commit)->id);
+            (*commit)->id = NULL;
+        }
+        if ((*commit)->parent) commit_free((*commit)->parent);
+        if ((*commit)->message){
+            free((*commit)->message);
+            (*commit)->message = NULL;
+        }
+        if ((*commit)->tree){
+            tree_free(&((*commit)->tree));
+            (*commit)->tree = NULL;
+        }
+        *commit = NULL;
+    }
 }

@@ -6,6 +6,11 @@ void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
     
     char* blob_content = serialize_hash_map_to_binary(tree->map,&blob_size);
     write_to_file_inzip_ng(archive,blob_path,blob_content,blob_size);
+
+    if (blob_path){
+        free(blob_path);
+        blob_path = NULL;
+    }
 }
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
@@ -46,4 +51,14 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     tree->map = map;
 
     return tree->map;
+}
+
+void tree_free(struct jvc_tree** tree){
+    if (tree && *tree){
+        if ((*tree)->id) free((*tree)->id);
+        (*tree)->id = NULL;
+
+        if ((*tree)->map) free_hash_map((*tree)->map);
+        *tree = NULL;
+    }
 }

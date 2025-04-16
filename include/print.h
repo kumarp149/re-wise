@@ -4,8 +4,10 @@
 #include "stdio.h"
 #include <stdarg.h>
 
-void print_message(va_list args);
+#define __PRINT_LOG__ 0
 
-void print_message_nl(va_list args);
+void show_message(const char* format, ...);
+
+void log_message(const char* fotmat, ...);
 
 #endif

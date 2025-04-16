@@ -114,5 +114,13 @@ void process_status(int argc,char** argv){
             }
         }
     }
+    if (head_commit){
+        free(head_commit);
+        head_commit = NULL;
+    }
+
+    if (head_commit_obj){
+        commit_free(&head_commit_obj);
+    }
     if (does_changes_exist) printf("commit the changes to track them\n");
 }

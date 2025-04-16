@@ -59,7 +59,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 void track(struct zip* archive, size_t flags,char ***option_values, int *option_counts){
     bool is_archive_being_tracked = is_already_initialized(archive);
     if ((is_archive_being_tracked) && !(flags & (1 << 2))){
-        printf("archive is already being tracked\n");
+        show_message("archive is already being tracked");
         return;
     }
 
@@ -69,13 +69,9 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
     struct sha256_generator* commit_generator = sha256_create_new_generator();
 
-
     clean_archive(archive,map_path_hash,tree_generator,commit_generator);
 
     size_t map_size = 0;
-
-    //write the map_path_hash to both index and tree
-    //char* serialized_map = serialize_hash_map_to_binary(map_path_hash,&map_size);
 
     for (int i=0;i<JVC_HASHMAP_SIZE;++i){
         hash_node* node = map_path_hash->buckets[i];
@@ -106,14 +102,14 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
     commit_blob->tree = tree_blob;
     commit_blob->message = option_values['m'-'a'][0];
 
-    //printf("commit message is: %s\n",commit_blob->message);
-
-    // printf("tree hash: %s\n",tree_blob->id);
-    // printf("commit hash: %s\n",commit_blob->id);
-
     commit_add_blob(archive,commit_blob);
     tree_add_blob(archive,tree_blob);
     write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
+
+    tree_free(&tree_blob);
+    commit_free(&commit_blob);
+    free(&commit_generator);
+    free(&tree_generator);
 }
 
 /*checks if head and index are already present*/
@@ -142,6 +138,9 @@ hash_map* load_options(){
 }
 
 void process_track(int argc,char** argv){
+
+    show_message("started process_track");
+
     if (argc == 2){
         show_track_usage();
     } if (argc == 3){
@@ -182,54 +181,22 @@ void process_track(int argc,char** argv){
         show_track_usage();
         return;
     } else if (args_error_status != 0){
-        printf("%s\n",error_message);
+        show_message("%s",error_message);
         show_track_usage();
         return;
     } else if (zip_open_error == ZIP_ER_NOENT){
-        printf("error: the archive %s not found\n",argv[2]);
+        show_message("error: the archive %s not found",argv[2]);
         return;
     } else if (zip_open_error == ZIP_ER_NOZIP){
-        printf("error: %s is not a valid archive\n",argv[2]);
+        show_message("error: %s is not a valid archive",argv[2]);
         return;
     } else if (zip_open_error == ZIP_ER_OPEN){
-        printf("error: cannot open the file %s\n",argv[2]);
+        show_message("error: cannot open the file %s",argv[2]);
         return;
     } else if (zip_open_error > 0){
-        printf("error: unknown error occurred\n");
+        show_message("error: unknown error occurred");
         return;
     }
-
-    // hash_map* options_map = load_options();
-
-    // size_t flags = 0;
-    // for (int i=2;i<argc;++i){
-    //     //printf("check for arg: %s\n",argv[i]);
-    //     if (i != argc-1 && (options_map,argv[i]) == NULL){
-    //         printf("error: unknown option: %s\n",argv[i]);
-    //         show_track_usage();
-    //         return;
-    //     }
-    //     if (strcmp("--help",argv[i]) == 0 || strcmp("-h",argv[i]) == 0){
-    //         show_track_usage();
-    //         return;
-    //     } else if (strcmp("--force",argv[i]) == 0 || strcmp("-f",argv[i]) == 0){
-    //         flags = flags | __TRACK_FLAG_FORCE__;
-    //     }
-    // }
-
-    // int archive_open_error;
-    // struct zip* archive = zip_open(argv[argc-1],ZIP_CHECKCONS,&archive_open_error);
-
-    // if (archive_open_error == ZIP_ER_NOENT){
-    //     printf("error: the archive %s not found",argv[argc-1]);
-    //     return;
-    // } else if (archive_open_error == ZIP_ER_NOZIP){
-    //     printf("error: %s is not a valid archive",argv[argc-1]);
-    //     return;
-    // } else if (archive_open_error == ZIP_ER_OPEN){
-    //     printf("error: cannot open the file %s",argv[argc-1]);
-    //     return;
-    // }
 
     track(archive,command_flags,options_array,options_sizes);
 

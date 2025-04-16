@@ -15,5 +15,7 @@ void tree_add_blob(struct zip* archive, struct jvc_tree* tree);
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id);
 
+void tree_free(struct jvc_tree** tree);
+
 
 #endif

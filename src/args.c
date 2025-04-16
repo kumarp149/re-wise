@@ -1,19 +1,14 @@
 #include "../include/args.h"
 
 int get_arg_type(char* arg,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,struct args_flag** cur_flag,struct args_valarg** cur_valarg){
-    //returns 0 if the arg cannot be found
-    //returns 1 if the arg is an flag
-    //return 2 if the arg is an option
-   
+
     for (int i=0;i<flags_size;++i){
-        //printf("i: %d, flag: %s",0,flags->longId);
         if (strcmp(arg,(flags+i)->longId) == 0 || strcmp(arg,(flags+i)->shortId) == 0){
             *cur_flag = (flags+i);
             return 1;
         }
     }
     for (int i=0;i<valargs_size;++i){
-        //printf("i: %d, valarg: %s",0,valargs->longId);
         if (strcmp(arg,(valargs+i)->longId) == 0 || strcmp(arg,(valargs+i)->shortId) == 0){
             *cur_valarg = (valargs+i);
             return 2;
@@ -33,7 +28,6 @@ bool is_probable_option(char* arg){
 }
 
 void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* archive_open_error, int* flag,char ***option_values, int *option_counts, int* err, char** error_message){
-    //we should start parsing the arguments from index 2;
 
     *archive = zip_open(argv[2],ZIP_CHECKCONS,archive_open_error);
 
@@ -50,7 +44,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
         if (arg_type == 1){
             (*flag) = (*flag) | (cur_flag->flagId);
         } else if (arg_type == 2){
-
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;
             int countArgs = 0;
@@ -64,11 +57,8 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
                 countArgs++;
             }
 
-            //printf("character: %s, size: %d\n",cur_valarg->shortId,option_counts[index]);
-
             start--;
 
-            //till start is the values for the valarg
             i = start;
 
             if (countArgs > cur_valarg->maxCount){
@@ -97,7 +87,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
     for (int i=0;i<valargs_size;++i){
         char *c = ((valargs+i)->shortId) + 1;
-        // printf("char: %c, mandatory?: %d\n",*c,(valargs+i)->mandatory);
         if ((valargs+i)->mandatory == true && *(option_counts + (*c - 'a')) == 0){
             *err = 1;
             sprintf(*error_message,"error: the argument <%s> is mandatory",(valargs+i)->short_description);
