@@ -44,11 +44,16 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
         if (arg_type == 1){
             (*flag) = (*flag) | (cur_flag->flagId);
         } else if (arg_type == 2){
+
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;
             int countArgs = 0;
 
-            option_values[index] = malloc((argc - i) * sizeof(char *));
+            if (option_counts[index] > 0){
+                countArgs = option_counts[index];
+            } else{
+                option_values[index] = malloc((argc - i) * sizeof(char *));
+            }
 
             while(start < argc && is_probable_option(argv[start]) == 0){
                 option_values[index][option_counts[index]] = strdup(argv[start]);
@@ -60,6 +65,8 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
             start--;
 
             i = start;
+
+            log_message("countArgs: %d",countArgs);
 
             if (countArgs > cur_valarg->maxCount){
                 *err = 1;

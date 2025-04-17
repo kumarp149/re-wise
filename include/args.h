@@ -5,6 +5,7 @@
 #include <zip.h>
 #include <stdlib.h>
 #include "string.h"
+#include "print.h"
 
 /*
 convention for arguments:

@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "args.h"
 #include "commit.h"
+#include "print.h"
 
 #define __STATUS_HELP__ __CONSTANTS_RW_PGMNAME__ " status <archive> <arg> <val>"
 
@@ -14,11 +15,11 @@
 #define __STATUS_ARGS__ \
   X(false,"--path","-p","path","display the status of specific paths",(1<<20)) \
 
-#define __STATUS_MODIFIED__ "following files have been modified"
+#define __STATUS_MODIFIED__ "modified:"
 
-#define __STATUS_DELETE__ "following files have been deleted"
+#define __STATUS_DELETED__ "deleted:"
 
-#define __STATUS_CREATED__ "following files have been created"
+#define __STATUS_CREATED__ "created:"
 
 void process_status(int argc,char** argv);
 

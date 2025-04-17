@@ -29,7 +29,7 @@ void process_status(int argc,char** argv){
     };
 
     char** options_array[__ARGS_OPTION_TYPES__];
-    int* options_sizes[__ARGS_OPTION_TYPES__];
+    int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
     struct zip* archive;
 
@@ -83,11 +83,13 @@ void process_status(int argc,char** argv){
 
     bool does_changes_exist = false;
 
+
+    log_message("options size: %d\n",*(options_sizes + ('p'-'a')));
     map_get_difference(head_commit_obj->tree,hash_map_current_state,only_index,&only_index_size,only_current,&only_current_size,both,&both_size);
 
     if (only_index_size > 0){
         does_changes_exist = true;
-        printf("following files have been deleted\n");
+        show_message(__STATUS_DELETED__);
 
         for (int i=0;i<only_index_size;++i){
             printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
@@ -96,8 +98,7 @@ void process_status(int argc,char** argv){
 
     if (only_current_size > 0){
         does_changes_exist = true;
-        printf(__STATUS_CREATED__ "\n");
-        //printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ __STATUS_CREATED__ __CONSTANTS_RW_COLOR_END__ "\n");
+        show_message(__STATUS_CREATED__);
 
         for (int i=0;i<only_current_size;++i){
             printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
@@ -106,7 +107,7 @@ void process_status(int argc,char** argv){
 
     if (both_size > 0){
         does_changes_exist = true;
-        printf("following files have been modified\n");
+        show_message(__STATUS_MODIFIED__);
 
         for (int i=0;i<both_size;++i){
             if (strcmp(hash_map_get(head_commit_obj->tree,both[i]),hash_map_get(hash_map_current_state,both[i])) != 0){
