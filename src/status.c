@@ -85,6 +85,10 @@ void process_status(int argc,char** argv){
 
 
     log_message("options size: %d\n",*(options_sizes + ('p'-'a')));
+
+    // for (int i=0;i<options_sizes['p'-'a'];++i){
+    //     log_message("%s",options_array['p'-'a'][i]);
+    // }
     map_get_difference(head_commit_obj->tree,hash_map_current_state,only_index,&only_index_size,only_current,&only_current_size,both,&both_size);
 
     if (only_index_size > 0){
@@ -92,7 +96,23 @@ void process_status(int argc,char** argv){
         show_message(__STATUS_DELETED__);
 
         for (int i=0;i<only_index_size;++i){
-            printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
+            if (options_sizes['p'-'a'] == 0){
+                printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
+            } else{
+                bool isFound = false;
+                for (int j=0;j<options_sizes['p'-'a'];++j){
+                    if (strcmp(only_index[i],options_array['p'-'a'][j]) == 0){
+                        isFound = true;
+                        break;
+                    }
+                }
+
+                if (isFound == true){
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED_BRIGHT__ "   %s <-----\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
+                } else{
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_index[i]);
+                }
+            }
         }
     }
 
@@ -101,7 +121,23 @@ void process_status(int argc,char** argv){
         show_message(__STATUS_CREATED__);
 
         for (int i=0;i<only_current_size;++i){
-            printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
+            if (options_sizes['p'-'a'] == 0){
+                printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
+            } else{
+                bool isFound = true;
+                for (int j=0;j<options_sizes['p'-'a'];++j){
+                    if (strcmp(only_current[i],options_array['p'-'a'][j]) == 0){
+                        isFound = true;
+                        break;
+                    }
+                }
+
+                if (isFound == true){
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN_BRIGHT__ "   %s  <-----\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
+                } else{
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s\n" __CONSTANTS_RW_COLOR_END__,only_current[i]);
+                }
+            }
         }
     }
 
@@ -110,8 +146,25 @@ void process_status(int argc,char** argv){
         show_message(__STATUS_MODIFIED__);
 
         for (int i=0;i<both_size;++i){
-            if (strcmp(hash_map_get(head_commit_obj->tree,both[i]),hash_map_get(hash_map_current_state,both[i])) != 0){
+            if (strcmp(hash_map_get(head_commit_obj->tree,both[i]),hash_map_get(hash_map_current_state,both[i])) == 0){
+                continue;
+            }
+            if (options_sizes['p'-'a'] == 0){
                 printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s\n" __CONSTANTS_RW_COLOR_END__,both[i]);
+            } else{
+                bool isFound = false;
+                for (int j=0;j<options_sizes['p'-'a'];++j){
+                    if (strcmp(both[i],options_array['p'-'a'][j]) == 0){
+                        isFound = true;
+                        break;
+                    }
+                }
+
+                if (isFound == true){
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW_BRIGHT__ "   %s <-----\n" __CONSTANTS_RW_COLOR_END__,both[i]);
+                } else{
+                    printf(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s\n" __CONSTANTS_RW_COLOR_END__,both[i]);
+                }
             }
         }
     }

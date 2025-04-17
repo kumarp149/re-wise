@@ -35,12 +35,18 @@ and a pointer to a tree file*/
 
 #define __CONSTANTS_RW_COLOR_GREEN__ "[0;32m"
 
+#define __CONSTANTS_RW_COLOR_GREEN_BRIGHT__ "[1;32m"
+
 #define __CONSTANTS_RW_COLOR_START__ "\033"
 
 #define __CONSTANTS_RW_COLOR_END__ "\033[0m"
 
 #define __CONSTANTS_RW_COLOR_YELLOW__ "[0;33m"
 
+#define __CONSTANTS_RW_COLOR_YELLOW_BRIGHT__ "[1;33m"
+
 #define __CONSTANTS_RW_COLOR_RED__ "[0;31m"
+
+#define __CONSTANTS_RW_COLOR_RED_BRIGHT__ "[1;31m"
 
 #endif
