@@ -47,6 +47,6 @@ char* serialize_hash_map_to_binary(hash_map *map, size_t *binary_size);
 
 hash_map* deserialize_hash_map_from_binary(const char *binary_data, size_t binary_size);
 
-void map_get_difference(hash_map* first, hash_map* second, char** only_first, size_t* only_first_size, char** only_second, size_t* only_second_size, char** both_present, size_t* both_present_size);
+void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first, hash_map* only_second, hash_map* both_present);
 
 #endif

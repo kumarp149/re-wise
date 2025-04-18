@@ -179,10 +179,7 @@ hash_map *deserialize_hash_map_from_binary(const char *binary_data, size_t binar
 }
 
 
-void map_get_difference(hash_map* first, hash_map* second, char** only_first, size_t* only_first_size, char** only_second, size_t* only_second_size, char** both_present, size_t* both_present_size){
-    *only_first_size = 0;
-    *only_second_size = 0;
-    *both_present_size = 0;
+void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first, hash_map* only_second, hash_map* both_present){
 
     for (int i=0;i<JVC_HASHMAP_SIZE;++i){
         hash_node* node = first->buckets[i];
@@ -190,12 +187,10 @@ void map_get_difference(hash_map* first, hash_map* second, char** only_first, si
         while(node){
             if (hash_map_get(second,node->key) == NULL){
                 //printf("%s is present only in first\n",node->key);
-                only_first[*only_first_size] = strdup(node->key);
-                *(only_first_size) = *(only_first_size) + 1;
+                
             } else{
                 //printf("%s is present only in both\n",node->key);
-                both_present[*both_present_size] = strdup(node->key);
-                *(both_present_size) = *(both_present_size) + 1;
+                
             }
             node = node->next;
         }
@@ -206,8 +201,7 @@ void map_get_difference(hash_map* first, hash_map* second, char** only_first, si
 
         while(node){
             if (hash_map_get(first,node->key) == NULL){
-                only_second[*only_second_size] = strdup(node->key);
-                *(only_second_size) = *(only_second_size) + 1;
+                
             }
             node = node->next;
         }
