@@ -19,6 +19,18 @@ hash_map* create_hash_map(){
     return map;
 }
 
+bool hash_map_isempty(hash_map* map){
+    if (map == NULL) return true;
+
+    for (int i=0;i<JVC_HASHMAP_SIZE;++i){
+        hash_node* node = map->buckets[i];
+        while(node){
+            return false;
+        }
+    }
+    return true;
+}
+
 void hash_map_insert(hash_map* map,const char* key, const char* value){
     unsigned int index = hash(key);
 
@@ -187,10 +199,10 @@ void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first,
         while(node){
             if (hash_map_get(second,node->key) == NULL){
                 //printf("%s is present only in first\n",node->key);
-                
+                hash_map_insert(only_first,node->key,"");
             } else{
                 //printf("%s is present only in both\n",node->key);
-                
+                hash_map_insert(both_present,node->key,"");
             }
             node = node->next;
         }
@@ -201,7 +213,7 @@ void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first,
 
         while(node){
             if (hash_map_get(first,node->key) == NULL){
-                
+                hash_map_insert(only_second,node->key,"");
             }
             node = node->next;
         }

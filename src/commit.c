@@ -1,5 +1,17 @@
 #include "../include/commit.h"
 
+void show_commit_usage(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size){
+    show_message("usage: " __COMMIT_HELP__ "\n");
+    show_message("Following are the available flags and arguments:");
+
+    for (int i=0;i<flags_size;++i){
+        show_message("  %s|%s: %s",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
+    }
+    for (int i=0;i<valargs_size;++i){
+        show_message("  %s|%s: %s",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
+    }
+}
+
 void commit_append_tree(char* blob_content,struct jvc_commit* commit,size_t* sz){
     memcpy(blob_content + *sz,__COMMIT_TREE_PREFIX__,strlen(__COMMIT_TREE_PREFIX__));
 
@@ -83,6 +95,8 @@ char* commit_get_head_commit(struct zip* archive){
 
     *(head_commit_id + 64) = '\0';
 
+    zip_fclose(head_file);
+
     return head_commit_id;
 }
 
@@ -154,18 +168,20 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         prefix = NULL;
     }
 
+    zip_fclose(file);
+
     return commit;
 }
 
 void commit_free(struct jvc_commit** commit){
     if (commit && *commit){
         if ((*commit)->id){
-            free((*commit)->id);
+            //free((*commit)->id);
             (*commit)->id = NULL;
         }
         if ((*commit)->parent) commit_free((*commit)->parent);
         if ((*commit)->message){
-            free((*commit)->message);
+            //free((*commit)->message);
             (*commit)->message = NULL;
         }
         if ((*commit)->tree){
@@ -174,4 +190,159 @@ void commit_free(struct jvc_commit** commit){
         }
         *commit = NULL;
     }
+}
+
+void create_new_commit(struct zip* archive,char ***option_values, int *option_counts){
+    char* head_commit = commit_get_head_commit(archive);
+
+    hash_map* path_map = create_hash_map();
+    struct sha256_generator* tree_generator = sha256_create_new_generator();
+    struct sha256_generator* commit_generator = sha256_create_new_generator();
+
+    zip_int64_t num_entries = zip_get_num_entries(archive, 0);
+
+    for (zip_int64_t i = num_entries - 1; i >= 0; i--){
+        const char *name = zip_get_name(archive, i, 0);
+
+        if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
+            continue;
+        } else if (name){
+            zip_file_t* file = zip_fopen(archive,name,0);
+            char* file_hash = sha256_zip_file_ng(file);
+            hash_map_insert(path_map,name,file_hash);
+            zip_fclose(file);
+
+            char* time = timer_timestamp();
+
+            sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
+            sha256_update_content(tree_generator,name,strlen(file_hash));
+            sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
+            sha256_update_content(tree_generator,time,strlen(time));
+
+            time = timer_timestamp();
+
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
+            sha256_update_content(commit_generator,name,strlen(file_hash));
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
+            sha256_update_content(commit_generator,name,strlen(name));
+            sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
+            sha256_update_content(commit_generator,time,strlen(time));
+            
+        }
+    }
+
+    for (int i=0;i<JVC_HASHMAP_SIZE;++i){
+        hash_node* node = path_map->buckets[i];
+
+        while(node){
+            char* path = blob_get_path(node->value);
+
+            copy_file_inzip_ng(archive,node->key,path);
+
+            node = node->next;
+
+            free(path);
+        }
+    }
+
+    struct jvc_tree* tree_blob = (struct jvc_tree *) malloc(sizeof(struct jvc_tree));
+
+    tree_blob->id = sha256_string(tree_generator->data,tree_generator->sz);
+    tree_blob->map = path_map;
+
+    struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
+
+    index_content->map = path_map;
+
+    struct jvc_commit* commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
+
+    struct jvc_commit* parent_commit = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
+
+    parent_commit->id = commit_get_head_commit(archive);
+
+    commit_blob->id = sha256_string(commit_generator->data,commit_generator->sz);
+    commit_blob->parent = parent_commit;
+    commit_blob->tree = tree_blob;
+    commit_blob->message = option_values['m'-'a'][0];
+
+    log_message("head commit: %s",parent_commit->id);
+
+    log_message("new commit: %s",commit_blob->id);
+
+    commit_add_blob(archive,commit_blob);
+    tree_add_blob(archive,tree_blob);
+    write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
+
+
+    // tree_free(&tree_blob);
+    // commit_free(&commit_blob);
+    // free(&commit_generator);
+    // free(&tree_generator);
+    
+}
+
+void process_commit(int argc,char** argv){
+    struct args_flag flags[] = {
+        #define X(longId, shortId, short_description, long_description, flagId) { longId, shortId, short_description, long_description, flagId },
+            __COMMIT_FLAGS__
+        #undef X
+    };
+
+    struct args_valarg valargs[] = {
+        #define X(mandatory, longId, shortId, short_description, long_description, maxCount) {mandatory, longId, shortId, short_description, long_description, maxCount },
+            __COMMIT_ARGS__
+        #undef X
+    };
+
+    struct zip* archive;
+
+    int command_flags = 0;
+
+    int args_error_status = 0;
+
+    char** options_array[__ARGS_OPTION_TYPES__];
+    int options_sizes[__ARGS_OPTION_TYPES__] = {0};
+
+    char* error_message = (char *)malloc(sizeof(char)*1000);
+
+    int zip_open_error = 0;
+
+    processArgs(argc,argv, &flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+
+    if (((command_flags) && (1<<2)) == 1){
+        show_commit_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+        return;
+    } else if (args_error_status != 0){
+        printf("%s\n",error_message);
+        show_commit_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+        return;
+    } else if (zip_open_error == ZIP_ER_NOENT){
+        printf("error: the archive %s not found\n",argv[2]);
+        return;
+    } else if (zip_open_error == ZIP_ER_NOZIP){
+        printf("error: %s is not a valid archive\n",argv[2]);
+        return;
+    } else if (zip_open_error == ZIP_ER_OPEN){
+        printf("error: cannot open the file %s\n",argv[2]);
+        return;
+    } else if (zip_open_error > 0){
+        printf("error: unknown error occurred\n");
+        return;
+    }
+
+    log_message("committing the changes in archive");
+
+    create_new_commit(archive,options_array,options_sizes);
+
+    log_message("successfully committed the changes");
+
+    if (zip_close(archive) == -1){
+        log_message("error closing the archive: %s",zip_strerror(archive));
+    } else{
+        log_message("closed the zip successfully");
+    }
+
+    log_message("closed the zip");
+
+    return;
 }

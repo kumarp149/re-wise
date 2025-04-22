@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 struct jvc_index{
     struct hash_map* map;
@@ -33,6 +34,8 @@ unsigned int hash(const char* key);
 
 /*creates an instance of a hash map*/
 hash_map* create_hash_map();
+
+bool hash_map_isempty(hash_map* map);
 
 /*inserts a key/value pair to hash_map*/
 void hash_map_insert(hash_map* map,const char* key, const char* value);

@@ -29,7 +29,8 @@ bin/sha256.o: src/sha256.c include/sha256.h include/constants.h include/print.h
 bin/timer.o: src/timer.c include/timer.h include/print.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
-bin/commit.o: src/commit.c include/commit.h include/tree.h include/utils.h include/blob.h include/print.h
+bin/commit.o: src/commit.c include/commit.h include/tree.h include/utils.h include/blob.h include/print.h \
+			  include/args.h
 	$(CC) -g -c $< $(INC) $(LIB) -o $@
 
 bin/tree.o: src/tree.c include/tree.h include/structures.h include/constants.h \

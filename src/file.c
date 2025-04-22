@@ -20,5 +20,9 @@ int main(int argc,char** argv) {
     } else if (strcmp(argv[1],"status") == 0){
         log_message("running status");
         process_status(argc,argv);
+    } else if (strcmp(argv[1],"commit") == 0){
+        //log_message(argc,argv);
+        log_message("running commit");
+        process_commit(argc,argv);
     }
 }
