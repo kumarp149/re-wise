@@ -82,6 +82,7 @@ void free_hash_map(hash_map* map){
             free(temp->key);
             free(temp->value);
             free(temp);
+            temp = NULL;
         }
     }
     free(map);

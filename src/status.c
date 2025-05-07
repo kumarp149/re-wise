@@ -173,13 +173,13 @@ void process_status(int argc,char** argv){
         show_particular_diff(head_commit_obj->tree,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],options_sizes['p'-'a']);
     }
     
-    if (head_commit){
-        //free(head_commit);
-        head_commit = NULL;
-    }
+    // if (head_commit){
+    //     //free(head_commit);
+    //     head_commit = NULL;
+    // }
 
-    if (head_commit_obj){
-        //commit_free(&head_commit_obj);
-    }
+    // if (head_commit_obj){
+    //     //commit_free(&head_commit_obj);
+    // }
     if (does_changes_exist) printf("commit the changes to track them\n");
 }

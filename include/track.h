@@ -32,9 +32,6 @@
     X("--force|-f", "force track the zip from scratch") \
     X("--help|-h", "show the usage") \
 
-#define __TRACK_ARGUMENTS__ \
-    X("--message|-m", "force track the zip from scratch") \
-
 
 extern const char* track_option_names[];
 extern const char* track_option_descriptions[];

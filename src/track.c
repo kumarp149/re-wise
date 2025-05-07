@@ -88,28 +88,34 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
     struct jvc_tree* tree_blob = (struct jvc_tree *) malloc(sizeof(struct jvc_tree));
 
-    tree_blob->id = sha256_string(tree_generator->data,tree_generator->sz);
+    tree_blob->id = strdup(sha256_string(tree_generator->data,tree_generator->sz));
     tree_blob->map = map_path_hash;
 
-    struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
+    // struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
 
-    index_content->map = map_path_hash;
+    // index_content->map = map_path_hash;
 
     struct jvc_commit* commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
 
-    commit_blob->id = sha256_string(commit_generator->data,commit_generator->sz);
+    commit_blob->id = strdup(sha256_string(commit_generator->data,commit_generator->sz));
     commit_blob->parent = NULL;
     commit_blob->tree = tree_blob;
     commit_blob->message = option_values['m'-'a'][0];
 
     commit_add_blob(archive,commit_blob);
+    log_message("added the commit blob: %s",commit_blob->id);
     tree_add_blob(archive,tree_blob);
+    log_message("added the tree blob: %s",tree_blob->id);
     write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
 
-    tree_free(&tree_blob);
-    commit_free(&commit_blob);
-    free(&commit_generator);
-    free(&tree_generator);
+    sha256_free(&commit_generator);
+    sha256_free(&tree_generator);
+    
+
+    // tree_free(&tree_blob);
+    // commit_free(&commit_blob);
+    // free(&commit_generator);
+    // free(&tree_generator);
 }
 
 /*checks if head and index are already present*/
@@ -163,7 +169,7 @@ void process_track(int argc,char** argv){
     };
 
     char** options_array[__ARGS_OPTION_TYPES__];
-    int* options_sizes[__ARGS_OPTION_TYPES__];
+    int* options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
     struct zip* archive;
 
