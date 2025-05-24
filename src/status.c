@@ -4,10 +4,10 @@ void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_val
     printf("usage: " __STATUS_HELP__ "\n\n");
     printf("Following are the available flags and arguments:\n");
 
-    for (int i=0;i<flags_size;++i){
+    for (size_t i=0;i<flags_size;++i){
         printf("  %s|%s: %s\n",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
     }
-    for (int i=0;i<valargs_size;++i){
+    for (size_t i=0;i<valargs_size;++i){
         printf("  %s|%s: %s\n",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
     }
 }
@@ -69,7 +69,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
 void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
     log_message("inside show_particular_diff");
     log_message("size of options: %d",options_size);
-    for (int i=0;i<options_size;++i){
+    for (size_t i=0;i<options_size;++i){
         char* opt = options_array[i];
         log_message("going for opt: %s",opt);
         if (hash_map_get(only_current,opt) != NULL){
@@ -117,14 +117,14 @@ void process_status(int argc,char** argv){
 
     int zip_open_error = 0;
 
-    processArgs(argc,argv, &flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) && (1<<2)) == 1){
-        show_status_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+    if (((command_flags) & (1<<2)) == 1){
+        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
         printf("%s\n",error_message);
-        show_status_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (zip_open_error == ZIP_ER_NOENT){
         printf("error: the archive %s not found\n",argv[2]);
@@ -163,23 +163,15 @@ void process_status(int argc,char** argv){
     // for (int i=0;i<options_sizes['p'-'a'];++i){
     //     log_message("%s",options_array['p'-'a'][i]);
     // }
-    map_get_difference(head_commit_obj->tree,hash_map_current_state,map_only_first,map_only_second,map_both);
+    map_get_difference(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
 
     if (options_sizes['p'-'a'] == 0){
         log_message("calling show_all_diff");
-        show_all_diff(head_commit_obj->tree,hash_map_current_state,map_only_first,map_only_second,map_both);
+        show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
     } else{
         log_message("calling show_particular_diff");
-        show_particular_diff(head_commit_obj->tree,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],options_sizes['p'-'a']);
+        show_particular_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
     }
     
-    // if (head_commit){
-    //     //free(head_commit);
-    //     head_commit = NULL;
-    // }
-
-    // if (head_commit_obj){
-    //     //commit_free(&head_commit_obj);
-    // }
     if (does_changes_exist) printf("commit the changes to track them\n");
 }

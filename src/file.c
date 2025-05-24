@@ -11,7 +11,6 @@
 
 
 int main(int argc,char** argv) {
-    int err;
 
     log_message("first arg is: %s",argv[0]);
     if (strcmp(argv[1],"track") == 0){

@@ -6,3 +6,4 @@ archive/*
 **/*.out
 **/*.out.*
 **/*.zip
+**/*.sh

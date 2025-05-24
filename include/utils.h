@@ -11,12 +11,13 @@
 #include "constants.h"
 #include <stdbool.h>
 #include "structures.h"
+#include "print.h"
 
 /*get the sha256 hash of a file in zip*/
 char* sha256_zip_file(const char* zip_filename, const char* file_in_zip);
 
 /*takes an already opened file and gives the sha256 of it*/
-char* sha256_zip_file_ng(const struct zip_file* file);
+char* sha256_zip_file_ng(struct zip_file* file);
 
 /*copy a file from one path to another path in zip*/
 void copy_file_inzip(const char* zip_filename,const char* file_from,const char* file_to);

@@ -25,7 +25,7 @@ and a pointer to a tree file*/
 
 #define __CONSTANTS_HASH_GENERATOR_SIZE__ 20000
 
-#define JVC_STRING_BUFFER 20000
+#define JVC_STRING_BUFFER 50000
 
 #define __CONSTANTS_RW_HASH_GENERATOR_DELIMITER__ "ABC"
 

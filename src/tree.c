@@ -7,10 +7,10 @@ void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
     char* blob_content = serialize_hash_map_to_binary(tree->map,&blob_size);
     write_to_file_inzip_ng(archive,blob_path,blob_content,blob_size);
 
-    if (blob_path){
-        free(blob_path);
-        blob_path = NULL;
-    }
+    // if (blob_path){
+    //     free(blob_path);
+    //     blob_path = NULL;
+    // }
 }
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
@@ -20,14 +20,14 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     char* tree_blob_path = blob_get_path(id);
     size_t buffer_size = 1024;
 
-    char* content = (char *)malloc(sizeof(char)*1000);
+    char* content = (char *)malloc(sizeof(char)*JVC_STRING_BUFFER);
 
     size_t content_size = 0;
 
     struct zip_file* file = zip_fopen(archive,tree_blob_path,0);
 
     while(1 > 0){
-        size_t bytes_read = zip_fread(file,content+content_size,buffer_size);
+        zip_int64_t bytes_read = zip_fread(file,content+content_size,buffer_size);
 
         //printf("bytes_read: %d\n",bytes_read);
 
@@ -38,7 +38,7 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
             // fprintf(stderr, "zip_fread error: %s\n", zip_error_strerror(zf_error));
             break;
         } else{
-            content_size += bytes_read;
+            content_size += (size_t) bytes_read;
         }
     }
 
@@ -46,11 +46,17 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
 
     *(content + content_size) = '\0';
 
+    log_message("binary content of a map is: %s and it's size is: %d\n",content,content_size);
+
     hash_map* map = deserialize_hash_map_from_binary(content,content_size);
 
     tree->map = map;
 
-    return tree->map;
+    log_message("is tree map empty: %d",hash_map_isempty(tree->map));
+
+    log_message("value from key is: %s",hash_map_get(tree->map,"sample.txt"));
+
+    return tree;
 }
 
 void tree_free(struct jvc_tree** tree){

@@ -2,14 +2,14 @@
 
 /*the methods returns the sha256 hash of the file inside a zip
 u must provide it a pointer to an already opened file*/
-char* sha256_zip_file_ng(const zip_file_t* file){
+char* sha256_zip_file_ng(zip_file_t* file){
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
 
     char buffer[4096];
     zip_int64_t bytes_read;
     while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
-        SHA256_Update(&sha256, buffer, bytes_read);
+        SHA256_Update(&sha256, buffer, (size_t) bytes_read);
     }
 
     if (bytes_read < 0) {
@@ -51,7 +51,8 @@ char* sha256_zip_file(const char* zip_filename, const char* file_in_zip) {
     char buffer[4096];
     zip_int64_t bytes_read;
     while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
-        SHA256_Update(&sha256, buffer, bytes_read);
+        size_t read = (size_t) bytes_read;
+        SHA256_Update(&sha256, buffer, read);
     }
 
     if (bytes_read < 0) {
@@ -80,7 +81,7 @@ void copy_file_inzip_ng(zip_t* archive,const char* file_from,const char* file_to
     struct zip_file* source_file = zip_fopen(archive, file_from, 0);
 
     if (!source_file){
-        printf(stderr, "Failed to open source file in zip: %s\n", file_from);
+        // printf(stderr, "Failed to open source file in zip: %s\n", file_from);
     }
 
     struct zip_stat stat;
@@ -91,7 +92,7 @@ void copy_file_inzip_ng(zip_t* archive,const char* file_from,const char* file_to
 
     char* buffer = malloc(stat.size);
 
-    if (zip_fread(source_file, buffer, stat.size) != stat.size) {
+    if (zip_fread(source_file, buffer, stat.size) != (zip_int64_t) stat.size) {
         fprintf(stderr, "Failed to read source file content\n");
         free(buffer);
         zip_fclose(source_file);
@@ -146,7 +147,7 @@ void copy_file_inzip(const char* zip_filename, const char* file_from, const char
         zip_close(archive);
     }
 
-    if (zip_fread(source_file, buffer, stat.size) != stat.size) {
+    if (zip_fread(source_file, buffer, stat.size) != (zip_int64_t) stat.size) {
         fprintf(stderr, "Failed to read source file content\n");
         free(buffer);
         zip_fclose(source_file);
@@ -194,7 +195,7 @@ void delete_files_inzip(const char* zip_filename, const char** file_paths, size_
         }
 
         // Mark the file for deletion
-        if (zip_delete(archive, file_index) != 0) {
+        if (zip_delete(archive, (zip_uint64_t) file_index) != 0) {
             fprintf(stderr, "Failed to delete file from zip: %s\n", file_path);
         } else {
             printf("Deleted file from zip: %s\n", file_path);
@@ -208,12 +209,12 @@ void delete_files_inzip(const char* zip_filename, const char** file_paths, size_
 }
 
 void delete_files_inzip_ng(struct zip* archive,const char** file_paths,size_t num_files){
-    for (int i=0;i<num_files;++i){
-        char* path = file_paths[i];
+    for (size_t i=0;i<num_files;++i){
+        const char* path = file_paths[i];
 
         zip_int64_t index = zip_name_locate(archive,path,0);
         
-        zip_delete(archive,index);
+        zip_delete(archive,(zip_uint64_t) index);
     }
 }
 
@@ -234,7 +235,7 @@ void write_to_file_inzip(const char* zip_filename, const char* file_path, const 
     zip_int64_t file_index = zip_name_locate(archive,file_path,0);
 
     if (file_index >= 0){
-        if (zip_file_replace(archive,file_index,source,ZIP_FL_OVERWRITE) < 0){
+        if (zip_file_replace(archive,(zip_uint64_t) file_index,source,ZIP_FL_OVERWRITE) < 0){
             //
             return;
         }
@@ -258,14 +259,14 @@ void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,si
     // printf("source created\n");
 
     if (!source){
-        printf("unable to create zip source\n");
+        log_message("unable to create zip source\n");
     }
 
     if (zip_file_add(archive,file_path,source,ZIP_FL_OVERWRITE) < 0){
-        printf("error adding file: %s\n",file_path);
+        log_message("error adding file: %s\n",file_path);
         return;
     } else{
-        printf("File added to zip successfully: %s\n",file_path);
+        log_message("File added to zip successfully: %s\n",file_path);
     }
 
     // printf("added content to file: %s\n",file_path);
@@ -307,10 +308,10 @@ void delete_folder_inzip_ng(struct zip* archive,const char* folder_path){
     zip_int64_t num_entries = zip_get_num_entries(archive, 0);
 
     for (zip_int64_t i = num_entries - 1; i >= 0; i--) {
-        const char *name = zip_get_name(archive, i, 0);
+        const char *name = zip_get_name(archive, (zip_uint64_t) i, 0);
         if (name && strncmp(name, folder_path, strlen(folder_path)) == 0) {
-            if (zip_delete(archive, i) < 0) {
-                printf( "Failed to delete entry: %s\n", name);
+            if (zip_delete(archive, (zip_uint64_t) i) < 0) {
+                log_message( "Failed to delete entry: %s\n", name);
             }
         }
     }
@@ -321,8 +322,8 @@ hash_map* iterate_zip(struct zip* archive){
 
     hash_map* map_current_state = create_hash_map();
 
-    for (int i=0;i<num_entries;++i){
-        const char *name = zip_get_name(archive, i, 0);
+    for (zip_int64_t i=0;i<num_entries;++i){
+        const char *name = zip_get_name(archive, (zip_uint64_t) i, 0);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
             continue;

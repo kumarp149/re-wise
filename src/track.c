@@ -20,9 +20,9 @@ bool is_already_initialized(struct zip* archive){
 /*cleans the archive and forms hash_generators for both index and tree*/
 void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_generator,struct sha256_generator* commit_generator){
 
-    zip_int64_t num_entries = zip_get_num_entries(archive, 0);
+    zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
-    for (zip_int64_t i = num_entries - 1; i >= 0; i--){
+    for (zip_uint64_t i = num_entries - 1; i >= 0; i--){
         const char *name = zip_get_name(archive, i, 0);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
@@ -56,7 +56,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 }
 
 
-void track(struct zip* archive, size_t flags,char ***option_values, int *option_counts){
+void track(struct zip* archive, int flags,char ***option_values){
     bool is_archive_being_tracked = is_already_initialized(archive);
     if ((is_archive_being_tracked) && !(flags & (1 << 2))){
         show_message("archive is already being tracked");
@@ -71,8 +71,6 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
     clean_archive(archive,map_path_hash,tree_generator,commit_generator);
 
-    size_t map_size = 0;
-
     for (int i=0;i<JVC_HASHMAP_SIZE;++i){
         hash_node* node = map_path_hash->buckets[i];
         while(node){
@@ -82,7 +80,7 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
 
             node = node->next;
 
-            free(path);
+            //free(path);
         }
     }
 
@@ -108,8 +106,8 @@ void track(struct zip* archive, size_t flags,char ***option_values, int *option_
     log_message("added the tree blob: %s",tree_blob->id);
     write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
 
-    sha256_free(&commit_generator);
-    sha256_free(&tree_generator);
+    //sha256_free(&commit_generator);
+    //sha256_free(&tree_generator);
     
 
     // tree_free(&tree_blob);
@@ -123,7 +121,7 @@ void show_track_usage(){
     printf("usage: "__TRACK_HELP__"\n\n");
     printf("Following are the available flags and arguments:\n");
     
-    for (int i=0;i<sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
+    for (unsigned long long i=0;i<sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
         printf("  %-10s: %s\n", track_option_names[i], track_option_descriptions[i]);
     }
 }
@@ -131,7 +129,7 @@ void show_track_usage(){
 /*load all the options*/
 hash_map* load_options(){
     hash_map* options_map = create_hash_map();
-    for (int i=0;i<sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
+    for (unsigned long long i=0;i < sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
         char* token = strtok(strdup(track_option_names[i]),"|");
         while(token != NULL){
             //printf("inserting %s and %s\n",token,track_option_descriptions[i]);
@@ -169,7 +167,7 @@ void process_track(int argc,char** argv){
     };
 
     char** options_array[__ARGS_OPTION_TYPES__];
-    int* options_sizes[__ARGS_OPTION_TYPES__] = {0};
+    int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
     struct zip* archive;
 
@@ -181,9 +179,9 @@ void process_track(int argc,char** argv){
 
     int zip_open_error = 0;
 
-    processArgs(argc,argv, &flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) && (1<<2)) == 1){
+    if (((command_flags) & (1<<2)) == 1){
         show_track_usage();
         return;
     } else if (args_error_status != 0){
@@ -204,7 +202,7 @@ void process_track(int argc,char** argv){
         return;
     }
 
-    track(archive,command_flags,options_array,options_sizes);
+    track(archive,command_flags,options_array);
 
     zip_close(archive);
     return;

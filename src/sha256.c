@@ -37,7 +37,7 @@ struct sha256_generator* sha256_create_new_generator(){
     return generator;
 }
 
-void sha256_update_content(struct sha256_generator* generator,char* content,size_t sz){
+void sha256_update_content(struct sha256_generator* generator,const char* content,size_t sz){
     size_t bytes_left = __CONSTANTS_HASH_GENERATOR_SIZE__ - generator->sz;
     if (bytes_left <= 0){
         return;

@@ -4,7 +4,9 @@ unsigned int hash(const char* key){
     unsigned long long hash = 0;
 
     while(*key){
-        hash = (hash*31) + *key++;
+        unsigned long long val = (unsigned long long) (*key);
+        key++;
+        hash = (hash*31) + val;
     }
 
     return hash % JVC_HASHMAP_SIZE;

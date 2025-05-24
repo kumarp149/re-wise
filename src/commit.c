@@ -4,10 +4,10 @@ void show_commit_usage(struct args_flag* flags,size_t flags_size,struct args_val
     show_message("usage: " __COMMIT_HELP__ "\n");
     show_message("Following are the available flags and arguments:");
 
-    for (int i=0;i<flags_size;++i){
+    for (size_t i=0;i<flags_size;++i){
         show_message("  %s|%s: %s",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
     }
-    for (int i=0;i<valargs_size;++i){
+    for (size_t i=0;i<valargs_size;++i){
         show_message("  %s|%s: %s",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
     }
 }
@@ -75,15 +75,6 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
     *(blob_content+size_filled) = '\0';
 
     write_to_file_inzip_ng(archive,blob_path,blob_content,size_filled);
-
-    if (blob_path){
-        free(blob_path);
-        blob_path = NULL;
-    }
-    if (blob_content){
-        free(blob_content);
-        blob_content = NULL;
-    }
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -91,9 +82,11 @@ char* commit_get_head_commit(struct zip* archive){
 
     struct zip_file* head_file = zip_fopen(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,0);
 
-    size_t bytes_read = zip_fread(head_file,head_commit_id,64);
+    zip_fread(head_file,head_commit_id,64);
 
     *(head_commit_id + 64) = '\0';
+
+    log_message("head_commit: %s\n",head_commit_id);
 
     zip_fclose(head_file);
 
@@ -120,6 +113,7 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         if (ch == '\n'){
             *(line + line_size) = '\0';
             if (strcmp(prefix,__COMMIT_TREE_PREFIX__) == 0){
+                log_message("forming the tree and it's map");
                 commit->tree = tree_get_tree(archive,line);
             } else if (strcmp(prefix,__COMMIT_PARENT_PREFIX__) == 0){
                 if (line_size == 0){
@@ -173,27 +167,27 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
     return commit;
 }
 
-void commit_free(struct jvc_commit** commit){
-    if (commit && *commit){
-        if ((*commit)->id){
-            //free((*commit)->id);
-            (*commit)->id = NULL;
-        }
-        if ((*commit)->parent) commit_free((*commit)->parent);
-        if ((*commit)->message){
-            //free((*commit)->message);
-            (*commit)->message = NULL;
-        }
-        if ((*commit)->tree){
-            tree_free(&((*commit)->tree));
-            (*commit)->tree = NULL;
-        }
-        *commit = NULL;
-    }
-}
+// void commit_free(struct jvc_commit** commit){
+//     if (commit && *commit){
+//         if ((*commit)->id){
+//             //free((*commit)->id);
+//             (*commit)->id = NULL;
+//         }
+//         if ((*commit)->parent) commit_free((*commit)->parent);
+//         if ((*commit)->message){
+//             //free((*commit)->message);
+//             (*commit)->message = NULL;
+//         }
+//         if ((*commit)->tree){
+//             tree_free(&((*commit)->tree));
+//             (*commit)->tree = NULL;
+//         }
+//         *commit = NULL;
+//     }
+// }
 
-void create_new_commit(struct zip* archive,char ***option_values, int *option_counts){
-    char* head_commit = commit_get_head_commit(archive);
+void create_new_commit(struct zip* archive,char ***option_values){
+    //char* head_commit = commit_get_head_commit(archive);
 
     hash_map* path_map = create_hash_map();
     struct sha256_generator* tree_generator = sha256_create_new_generator();
@@ -202,7 +196,7 @@ void create_new_commit(struct zip* archive,char ***option_values, int *option_co
     zip_int64_t num_entries = zip_get_num_entries(archive, 0);
 
     for (zip_int64_t i = num_entries - 1; i >= 0; i--){
-        const char *name = zip_get_name(archive, i, 0);
+        const char *name = zip_get_name(archive, (zip_uint64_t) i, 0);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
             continue;
@@ -307,14 +301,14 @@ void process_commit(int argc,char** argv){
 
     int zip_open_error = 0;
 
-    processArgs(argc,argv, &flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) && (1<<2)) == 1){
-        show_commit_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+    if (((command_flags) & (1<<2)) == 1){
+        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
         printf("%s\n",error_message);
-        show_commit_usage(&flags, sizeof(flags)/sizeof(flags[0]), &valargs, sizeof(valargs)/sizeof(valargs[0]));
+        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (zip_open_error == ZIP_ER_NOENT){
         printf("error: the archive %s not found\n",argv[2]);
@@ -332,7 +326,7 @@ void process_commit(int argc,char** argv){
 
     log_message("committing the changes in archive");
 
-    create_new_commit(archive,options_array,options_sizes);
+    create_new_commit(archive,options_array);
 
     log_message("successfully committed the changes");
 

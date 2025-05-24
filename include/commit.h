@@ -37,7 +37,7 @@ char* commit_get_head_commit(struct zip* archive);
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id);
 
-void commit_free(struct jvc_commit** commit);
+// void commit_free(struct jvc_commit** commit);
 
 void process_commit(int argc,char** argv);
 
