@@ -186,8 +186,14 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 //     }
 // }
 
-void create_new_commit(struct zip* archive,char ***option_values){
-    //char* head_commit = commit_get_head_commit(archive);
+void create_new_commit(struct zip* archive,char ***option_values,int command_flags){
+    char* head_commit_id = commit_get_head_commit(archive);
+    
+    struct jvc_commit* head_commit = commit_get_commit(archive,head_commit_id);
+
+    hash_map* head_map = head_commit->tree->map;
+
+    bool is_archived_changed = false;
 
     hash_map* path_map = create_hash_map();
     struct sha256_generator* tree_generator = sha256_create_new_generator();
@@ -203,10 +209,19 @@ void create_new_commit(struct zip* archive,char ***option_values){
         } else if (name){
             zip_file_t* file = zip_fopen(archive,name,0);
             char* file_hash = sha256_zip_file_ng(file);
+
+            char* file_hash_inhead = hash_map_get(head_map,name);
+
+            if ((file_hash_inhead == NULL) || (strcmp(file_hash_inhead,file_hash) != 0)){
+                is_archived_changed = true;
+            }
+            
             hash_map_insert(path_map,name,file_hash);
             zip_fclose(file);
 
             char* time = timer_timestamp();
+
+            free(time);
 
             sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(tree_generator,name,strlen(file_hash));
@@ -215,13 +230,14 @@ void create_new_commit(struct zip* archive,char ***option_values){
 
             time = timer_timestamp();
 
+            free(time);
+
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,name,strlen(file_hash));
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,name,strlen(name));
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,time,strlen(time));
-            
         }
     }
 
@@ -237,6 +253,11 @@ void create_new_commit(struct zip* archive,char ***option_values){
 
             free(path);
         }
+    }
+
+    if (is_archived_changed == false && (command_flags & (1<<2)) == 0){
+        show_message("no changes to commit");
+        return;
     }
 
     struct jvc_tree* tree_blob = (struct jvc_tree *) malloc(sizeof(struct jvc_tree));
@@ -267,12 +288,7 @@ void create_new_commit(struct zip* archive,char ***option_values){
     tree_add_blob(archive,tree_blob);
     write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
 
-
-    // tree_free(&tree_blob);
-    // commit_free(&commit_blob);
-    // free(&commit_generator);
-    // free(&tree_generator);
-    
+    show_message("commit %s created",commit_blob->id);
 }
 
 void process_commit(int argc,char** argv){
@@ -303,7 +319,9 @@ void process_commit(int argc,char** argv){
 
     processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) & (1<<2)) == 1){
+    log_message("command_flags is: %d\n",command_flags);
+
+    if (((command_flags) & (1<<1)) != 0){
         show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
@@ -326,7 +344,7 @@ void process_commit(int argc,char** argv){
 
     log_message("committing the changes in archive");
 
-    create_new_commit(archive,options_array);
+    create_new_commit(archive,options_array,command_flags);
 
     log_message("successfully committed the changes");
 

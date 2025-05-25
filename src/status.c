@@ -119,7 +119,7 @@ void process_status(int argc,char** argv){
 
     processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) & (1<<2)) == 1){
+    if (((command_flags) & (1<<1)) != 0){
         show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
@@ -175,3 +175,38 @@ void process_status(int argc,char** argv){
     
     if (does_changes_exist) printf("commit the changes to track them\n");
 }
+
+// enum path_status status_get_path_status(struct zip* archive,char* path){
+//     char* head_commit = commit_get_head_commit(archive);
+
+//     bool path_ispresent_inhead = false;
+//     bool path_ispresent_intree = false;
+
+//     char* path_hash_in_head = status_get_path_hash(path,head_commit,&path_ispresent_inhead);
+
+
+
+//     zip_file_t* file = zip_fopen(archive,path,0);
+
+//     char* path_hash_work_tree = sha256_zip_file_ng(file);
+
+//     if (path_hash_work_tree){
+//         path_ispresent_intree = true;
+//     }
+
+//     if (path_ispresent_inhead == false && path_ispresent_intree == false){
+//         return IRRELEVANT;
+//     } else if (path_ispresent_inhead == false){
+//         return CREATED;
+//     } else if (path_ispresent_intree == false){
+//         return DELETED;
+//     } else{
+//         if (strcmp(path_hash_in_head,path_hash_work_tree) == 0){
+//             return UNCHANGED;
+//         } else return MODIFIED;
+//     }
+// }
+
+// char* status_get_path_hash(char* path,char* commit_id,bool* path_ispresent_inhead){
+    
+// }

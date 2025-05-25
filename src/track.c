@@ -58,7 +58,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 
 void track(struct zip* archive, int flags,char ***option_values){
     bool is_archive_being_tracked = is_already_initialized(archive);
-    if ((is_archive_being_tracked) && !(flags & (1 << 2))){
+    if ((is_archive_being_tracked) && !(flags & (1<<1))){
         show_message("archive is already being tracked");
         return;
     }
@@ -181,7 +181,7 @@ void process_track(int argc,char** argv){
 
     processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) & (1<<2)) == 1){
+    if (((command_flags) & (1<<2)) != 0){
         show_track_usage();
         return;
     } else if (args_error_status != 0){

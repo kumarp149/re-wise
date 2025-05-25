@@ -15,7 +15,8 @@
 #define __COMMIT_HELP__ __CONSTANTS_RW_PGMNAME__ " commit <archive> <arg> <val>"
 
 #define __COMMIT_FLAGS__ \
-  X("--help","-h" , "help","display this usage", (1<<2)) \
+  X("--help","-h" , "help", "display this usage", (1)) \
+  X("--empty","-e", "empty", "to create an empty commit", (2)) \
 
 #define __COMMIT_ARGS__ \
   X(false,"--path","-p","path","list of paths to include for the commit",(1<<20)) \

@@ -1,7 +1,7 @@
 #include "../include/args.h"
 
 int get_arg_type(char* arg,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,struct args_flag** cur_flag,struct args_valarg** cur_valarg){
-
+    log_message("calling get_arg_type for arg: %s\n",arg);
     for (size_t i=0;i<flags_size;++i){
         if (strcmp(arg,(flags+i)->longId) == 0 || strcmp(arg,(flags+i)->shortId) == 0){
             *cur_flag = (flags+i);
@@ -44,7 +44,9 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
         int arg_type = get_arg_type(arg,flags,flags_size,valargs,valargs_size,&cur_flag,&cur_valarg);
 
         if (arg_type == 1){
-            (*flag) = (*flag) | (cur_flag->flagId);
+            //(*flag) = (*flag) | (1 << (cur_flag->flagId));
+            (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
+            log_message("flag present: %s",arg);
         } else if (arg_type == 2){
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;

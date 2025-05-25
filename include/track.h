@@ -22,8 +22,8 @@
 #define __TRACK_HELP__ __CONSTANTS_RW_PGMNAME__ " track <archive> <flags> <arg> <value>"
 
 #define __TRACK_FLAGS__ \
-  X("--force", "-f", "force", "flag to force re-init the archive", (1<<1)) \
-  X("--help","-h" , "help","show the usage", (1<<2)) \
+  X("--force", "-f", "force", "flag to force re-init the archive", (1)) \
+  X("--help","-h" , "help","show the usage", (2)) \
 
 #define __TRACK_ARGS__ \
   X(true,"--message","-m","message","commit message to commit the archive",1) \

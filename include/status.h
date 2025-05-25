@@ -10,7 +10,7 @@
 #define __STATUS_HELP__ __CONSTANTS_RW_PGMNAME__ " status <archive> <arg> <val>"
 
 #define __STATUS_FLAGS__ \
-  X("--help","-h" , "help","display this usage", (1<<2)) \
+  X("--help","-h" , "help","display this usage", (1)) \
 
 #define __STATUS_ARGS__ \
   X(false,"--path","-p","path","display the status of specific paths",(1<<20)) \
@@ -22,6 +22,14 @@
 #define __STATUS_CREATED__ "created:"
 
 void process_status(int argc,char** argv);
+
+enum path_status{
+  MODIFIED,
+  CREATED,
+  DELETED,
+  UNCHANGED,
+  IRRELEVANT
+};
 
 
 #endif
