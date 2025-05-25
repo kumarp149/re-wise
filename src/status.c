@@ -119,7 +119,7 @@ void process_status(int argc,char** argv){
 
     processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) & (1<<1)) != 0){
+    if (((command_flags) & (1<<__STATUS_FLAGBIT_HELP__)) != 0){
         show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){

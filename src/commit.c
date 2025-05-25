@@ -255,7 +255,7 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
         }
     }
 
-    if (is_archived_changed == false && (command_flags & (1<<2)) == 0){
+    if (is_archived_changed == false && (command_flags & (1<<__COMMIT_FLAGBIT_EMPTY_)) == 0){
         show_message("no changes to commit");
         return;
     }
@@ -321,7 +321,7 @@ void process_commit(int argc,char** argv){
 
     log_message("command_flags is: %d\n",command_flags);
 
-    if (((command_flags) & (1<<1)) != 0){
+    if (((command_flags) & (1<<__COMMIT_FLAGBIT_HELP_)) != 0){
         show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){

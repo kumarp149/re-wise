@@ -9,8 +9,10 @@
 
 #define __STATUS_HELP__ __CONSTANTS_RW_PGMNAME__ " status <archive> <arg> <val>"
 
+#define __STATUS_FLAGBIT_HELP__ 1
+
 #define __STATUS_FLAGS__ \
-  X("--help","-h" , "help","display this usage", (1)) \
+  X("--help","-h" , "help","display this usage", (__STATUS_FLAGBIT_HELP__)) \
 
 #define __STATUS_ARGS__ \
   X(false,"--path","-p","path","display the status of specific paths",(1<<20)) \

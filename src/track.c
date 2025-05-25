@@ -42,6 +42,8 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
             sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(tree_generator,time,strlen(time));
 
+            free(time);
+
             time = timer_timestamp();
 
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
@@ -50,15 +52,16 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
             sha256_update_content(commit_generator,name,strlen(name));
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,time,strlen(time));
+
+            free(time);
         }
     }
-
 }
 
 
 void track(struct zip* archive, int flags,char ***option_values){
     bool is_archive_being_tracked = is_already_initialized(archive);
-    if ((is_archive_being_tracked) && !(flags & (1<<1))){
+    if ((is_archive_being_tracked) && !(flags & (1<<__TRACK_FLAGBIT_FORCE__))){
         show_message("archive is already being tracked");
         return;
     }
@@ -79,8 +82,6 @@ void track(struct zip* archive, int flags,char ***option_values){
             copy_file_inzip_ng(archive,node->key,path);
 
             node = node->next;
-
-            //free(path);
         }
     }
 
@@ -181,7 +182,7 @@ void process_track(int argc,char** argv){
 
     processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
 
-    if (((command_flags) & (1<<2)) != 0){
+    if (((command_flags) & (1<<__TRACK_FLAGBIT_HELP__)) != 0){
         show_track_usage();
         return;
     } else if (args_error_status != 0){
