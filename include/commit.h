@@ -7,6 +7,7 @@
 #include "args.h"
 #include "sha256.h"
 #include "timer.h"
+#include "errors.h"
 
 #define __COMMIT_TREE_PREFIX__ "tree: "
 #define __COMMIT_PARENT_PREFIX__ "parent: "

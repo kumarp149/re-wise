@@ -115,28 +115,19 @@ void process_status(int argc,char** argv){
 
     char* error_message = (char *)malloc(sizeof(char)*1000);
 
-    int zip_open_error = 0;
+    ErrorCode errorCode = ERR_NOERROR;
 
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
 
     if (((command_flags) & (1<<__STATUS_FLAGBIT_HELP__)) != 0){
         show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
-        printf("%s\n",error_message);
+        show_message("%s\n",error_message);
         show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
-    } else if (zip_open_error == ZIP_ER_NOENT){
-        printf("error: the archive %s not found\n",argv[2]);
-        return;
-    } else if (zip_open_error == ZIP_ER_NOZIP){
-        printf("error: %s is not a valid archive\n",argv[2]);
-        return;
-    } else if (zip_open_error == ZIP_ER_OPEN){
-        printf("error: cannot open the file %s\n",argv[2]);
-        return;
-    } else if (zip_open_error > 0){
-        printf("error: unknown error occurred\n");
+    } else if (errorCode != ERR_NOERROR){
+        show_message(error_get_message(errorCode));
         return;
     }
 

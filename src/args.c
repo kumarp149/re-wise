@@ -28,10 +28,12 @@ bool is_probable_option(char* arg){
     return false;
 }
 
-void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* archive_open_error, int* flag,char ***option_values, int *option_counts, int* err, char** error_message){
-    log_message("calling processArgs");
+void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts, int* err, char** error_message, ErrorCode* errorCode){
+    int archive_open_error = 0;
 
-    *archive = zip_open(argv[2],ZIP_CHECKCONS,archive_open_error);
+    *archive = zip_open(argv[2],ZIP_CHECKCONS,&archive_open_error);
+
+    log_message("archive open status from processArgs: %d\n",archive_open_error);
 
     *flag = 0;
 
@@ -106,8 +108,18 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
         }
     }
 
-    if (err == 0 && archive_open_error != 0){
-        *err = 1;
-        sprintf(*error_message, "error opening the archive: %s",argv[2]);
+    if (archive_open_error != 0){
+
+        log_message("error opening the archive");
+
+        if (archive_open_error == ZIP_ER_NOENT){
+            *errorCode = ERR_ZIP_NOFILE;
+            *error_message = argv[2];
+        } else if (archive_open_error == ZIP_ER_NOZIP){
+            *errorCode = ERR_ZIP_NOT_VALID;
+            *error_message = argv[2];
+        } else if (archive_open_error == ZIP_ER_OPEN){
+            *errorCode = ERR_UNKNOWN;
+        }
     }
 }

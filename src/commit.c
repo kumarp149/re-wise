@@ -315,9 +315,9 @@ void process_commit(int argc,char** argv){
 
     char* error_message = (char *)malloc(sizeof(char)*1000);
 
-    int zip_open_error = 0;
+    ErrorCode errCode = ERR_NOERROR;
 
-    processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message,&errCode);
 
     log_message("command_flags is: %d\n",command_flags);
 
@@ -325,22 +325,13 @@ void process_commit(int argc,char** argv){
         show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
     } else if (args_error_status != 0){
-        printf("%s\n",error_message);
+        show_message("%s\n",error_message);
         show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
         return;
-    } else if (zip_open_error == ZIP_ER_NOENT){
-        printf("error: the archive %s not found\n",argv[2]);
+    } else if (errCode != ERR_NOERROR){
+        show_message(error_get_message(errCode));
         return;
-    } else if (zip_open_error == ZIP_ER_NOZIP){
-        printf("error: %s is not a valid archive\n",argv[2]);
-        return;
-    } else if (zip_open_error == ZIP_ER_OPEN){
-        printf("error: cannot open the file %s\n",argv[2]);
-        return;
-    } else if (zip_open_error > 0){
-        printf("error: unknown error occurred\n");
-        return;
-    }
+    } 
 
     log_message("committing the changes in archive");
 

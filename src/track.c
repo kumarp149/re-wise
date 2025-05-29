@@ -143,9 +143,7 @@ hash_map* load_options(){
 }
 
 void process_track(int argc,char** argv){
-
-    show_message("started process_track");
-
+    
     if (argc == 2){
         show_track_usage();
     } if (argc == 3){
@@ -178,9 +176,9 @@ void process_track(int argc,char** argv){
 
     char* error_message = (char *)malloc(sizeof(char)*1000);
 
-    int zip_open_error = 0;
+    ErrorCode errorCode = ERR_NOERROR;
 
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &zip_open_error, &command_flags, options_array, options_sizes, &args_error_status, &error_message);
+    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
 
     if (((command_flags) & (1<<__TRACK_FLAGBIT_HELP__)) != 0){
         show_track_usage();
@@ -189,17 +187,8 @@ void process_track(int argc,char** argv){
         show_message("%s",error_message);
         show_track_usage();
         return;
-    } else if (zip_open_error == ZIP_ER_NOENT){
-        show_message("error: the archive %s not found",argv[2]);
-        return;
-    } else if (zip_open_error == ZIP_ER_NOZIP){
-        show_message("error: %s is not a valid archive",argv[2]);
-        return;
-    } else if (zip_open_error == ZIP_ER_OPEN){
-        show_message("error: cannot open the file %s",argv[2]);
-        return;
-    } else if (zip_open_error > 0){
-        show_message("error: unknown error occurred");
+    } else if (errorCode != ERR_NOERROR){
+        show_message(error_get_message(errorCode),error_message);
         return;
     }
 

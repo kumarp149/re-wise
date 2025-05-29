@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "string.h"
 #include "print.h"
+#include "errors.h"
 
 /*
 convention for arguments:
@@ -38,6 +39,6 @@ valargs
 option_values
 error_message
 */
-void processArgs(int argc,char** argv,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,zip_t** archive,int* archive_open_error,int* flag,char ***option_values, int *option_counts,int* err,char** error_message);
+void processArgs(int argc,char** argv,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,zip_t** archive,int* flag,char ***option_values, int *option_counts,int* err,char** error_message, ErrorCode* errorCode);
 
 #endif
