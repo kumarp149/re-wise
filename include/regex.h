@@ -17,5 +17,7 @@
 */
 bool regex_is_matching(char* pattern,char* word);
 
+bool regex_is_anypattern_matching(char **patterns,size_t pattern_count,char* word);
+
 
 #endif

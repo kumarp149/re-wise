@@ -43,5 +43,6 @@ int main(int argc,char** argv) {
         printf("%d\n",regex_is_matching("*a*[abcd]**/**/**/?","pqraa/klm/klm/klm")); //0
         printf("%d\n",regex_is_matching("*a*[abcd]**/**/**/?","pqraa/klm/klm/klma")); //0
         printf("%d\n",regex_is_matching("*a*[abcd]**/**/**/?","pqraa/klm/klm/klma/p")); //1
+        printf("%d\n",regex_is_matching("*","xyz/xyz.txty")); //1
     }
 }

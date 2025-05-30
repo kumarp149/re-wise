@@ -12,7 +12,7 @@ void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_val
     }
 }
 
-void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both){
+void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
     log_message("showing all diff");
     bool no_changes = true;
     if (hash_map_isempty(only_index) == false){
@@ -22,7 +22,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_index->buckets[i];
             while(node){
-                show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)) show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
                 node = node->next;
             }
         }
@@ -34,7 +34,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_current->buckets[i];
             while(node){
-                show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key))show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
                 node = node->next;
             }
         }
@@ -52,7 +52,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
                         isDiffFound = true;
                         no_changes = false;
                     }
-                    show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                    if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)) show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
                 }
                 node = node->next;
             }
@@ -66,28 +66,28 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
     }
 }
 
-void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
-    log_message("inside show_particular_diff");
-    log_message("size of options: %d",options_size);
-    for (size_t i=0;i<options_size;++i){
-        char* opt = options_array[i];
-        log_message("going for opt: %s",opt);
-        if (hash_map_get(only_current,opt) != NULL){
-            show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "%s: " __CONSTANTS_RW_COLOR_END__ "created",opt);
-        } else if (hash_map_get(only_index,opt) != NULL){
-            show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "%s: " __CONSTANTS_RW_COLOR_END__ "deleted",opt);
-        } else if (hash_map_get(both,opt) != NULL){
-            log_message("hashes: %s, %s",hash_map_get(index,opt),hash_map_get(current,opt));
-            if (strcmp(hash_map_get(index,opt),hash_map_get(current,opt)) != 0){
-                show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "modified",opt);
-            } else{
-                show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "unchanged",opt);
-            }
-        } else{
-            show_message("%s: " "not found in the zip",opt);
-        }
-    }
-}
+// void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
+//     log_message("inside show_particular_diff");
+//     log_message("size of options: %d",options_size);
+//     for (size_t i=0;i<options_size;++i){
+//         char* opt = options_array[i];
+//         log_message("going for opt: %s",opt);
+//         if (hash_map_get(only_current,opt) != NULL){
+//             show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "%s: " __CONSTANTS_RW_COLOR_END__ "created",opt);
+//         } else if (hash_map_get(only_index,opt) != NULL){
+//             show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "%s: " __CONSTANTS_RW_COLOR_END__ "deleted",opt);
+//         } else if (hash_map_get(both,opt) != NULL){
+//             log_message("hashes: %s, %s",hash_map_get(index,opt),hash_map_get(current,opt));
+//             if (strcmp(hash_map_get(index,opt),hash_map_get(current,opt)) != 0){
+//                 show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "modified",opt);
+//             } else{
+//                 show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "unchanged",opt);
+//             }
+//         } else{
+//             show_message("%s: " "not found in the zip",opt);
+//         }
+//     }
+// }
 
 
 void process_status(int argc,char** argv){
@@ -156,13 +156,15 @@ void process_status(int argc,char** argv){
     // }
     map_get_difference(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
 
-    if (options_sizes['p'-'a'] == 0){
-        log_message("calling show_all_diff");
-        show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
-    } else{
-        log_message("calling show_particular_diff");
-        show_particular_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
-    }
+    show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
+
+    // if (options_sizes['p'-'a'] == 0){
+    //     log_message("calling show_all_diff");
+    //     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
+    // } else{
+    //     log_message("calling show_particular_diff");
+    //     show_particular_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
+    // }
     
     if (does_changes_exist) printf("commit the changes to track them\n");
 }

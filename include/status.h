@@ -7,6 +7,7 @@
 #include "commit.h"
 #include "print.h"
 #include "errors.h"
+#include "regex.h"
 
 #define __STATUS_HELP__ __CONSTANTS_RW_PGMNAME__ " status <archive> <arg> <val>"
 

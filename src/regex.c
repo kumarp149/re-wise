@@ -133,3 +133,11 @@ bool regex_is_matching(char* pattern,char* word){
 
     return regex_is_matching_recur(0,0,pattern,word,&pn,&wn,dp);
 }
+
+bool regex_is_anypattern_matching(char **patterns,size_t pattern_count,char* word){
+    for (size_t i=0;i<pattern_count;++i){
+        //printf("matching %s and %s\n",patterns[i],word);
+        if (regex_is_matching(patterns[i],word)) return true;
+    }
+    return false;
+}
