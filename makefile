@@ -39,7 +39,7 @@ bin/tree.o: src/tree.c include/tree.h include/structures.h include/constants.h \
 			include/blob.h include/utils.h include/print.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/blob.o: src/blob.c include/blob.h include/constants.h include/print.h
+bin/blob.o: src/blob.c include/blob.h include/constants.h include/print.h include/commit.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/args.o: src/args.c include/args.h include/print.h
@@ -54,5 +54,5 @@ bin/print.o: src/print.c include/print.h
 bin/regex.o: src/regex.c include/regex.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/restore.o: src/restore.c include/restore.h include/args.h
+bin/restore.o: src/restore.c include/restore.h include/args.h include/blob.h include/print.h include/utils.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@

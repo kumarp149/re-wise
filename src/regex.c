@@ -22,8 +22,6 @@ size_t get_sequence_closing_index(size_t index,char* s,size_t* sn){
 }
 
 bool regex_is_matching_recur(size_t pindex,size_t sindex,char* p,char* s,size_t* pn,size_t* sn,int **dp){
-    //printf("performing recursive call for: %lu and %lu\n",pindex,sindex);
-
     if (pindex >= *pn && sindex >= *sn) return true;
     if (pindex >= *pn){
         return false;

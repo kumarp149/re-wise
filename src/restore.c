@@ -1,15 +1,44 @@
 #include "../include/restore.h"
 
 void show_restore_usage(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size){
-    printf("usage: " __RESTORE_HELP__ "\n\n");
-    printf("Following are the available flags and arguments:\n");
+    show_message("usage: " __RESTORE_HELP__ "\n");
+    show_message("Following are the available flags and arguments:");
 
     for (size_t i=0;i<flags_size;++i){
-        printf("  %s|%s: %s\n",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
+        show_message("  %s|%s: %s",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
     }
     for (size_t i=0;i<valargs_size;++i){
-        printf("  %s|%s: %s\n",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
+        show_message("  %s|%s: %s",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
     }
+}
+
+void restore_path(struct zip* archive,char* path){
+    char* head_commit = commit_get_head_commit(archive);
+
+    char* path_hash_in_head = blob_get_hash_atrevision(archive,head_commit,path);
+
+    if (path_hash_in_head == NULL){
+        show_message("the path %s is not found at HEAD",path);
+        return;
+    }
+
+    zip_file_t* file = zip_fopen(archive,path,0);
+    
+    char* path_hash_in_worktree = sha256_zip_file_ng(file);
+
+    if (path_hash_in_worktree == NULL){
+        goto __BLOBCOPY;
+    }
+
+    if (strcmp(path_hash_in_head,path_hash_in_worktree) == 0){
+        show_message("path %s is unchanged",path);
+        return;
+    }
+
+__BLOBCOPY:
+
+    copy_file_inzip_ng(archive,blob_get_path(path_hash_in_head),path);
+    return;
 }
 
 void process_restore(int argc,char** argv){
@@ -56,6 +85,11 @@ void process_restore(int argc,char** argv){
         show_message(error_get_message(errorCode));
         return;
     }
+
+    for (int i=0;i<options_sizes['p'-'a'];++i){
+        restore_path(archive,options_array['p'-'a'][i]);
+    }
+
+    zip_close(archive);
     return;
-    
 }

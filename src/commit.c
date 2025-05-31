@@ -60,7 +60,6 @@ void commit_append_message(char* blob_content,struct jvc_commit* commit,size_t* 
 }
 
 void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
-    //printf("adding the blob\n");
 
     char* blob_path = blob_get_path(commit->id);
 
@@ -95,9 +94,6 @@ char* commit_get_head_commit(struct zip* archive){
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
     char* commit_blob_path = blob_get_path(id);
-
-    //printf("calling commit_get_commit for %s\n",id);
-
     char* line = (char *)malloc(sizeof(char)*1001);
     char* prefix = (char *)malloc(sizeof(char)*100);
 

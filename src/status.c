@@ -1,14 +1,14 @@
 #include "../include/status.h"
 
 void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size){
-    printf("usage: " __STATUS_HELP__ "\n\n");
-    printf("Following are the available flags and arguments:\n");
+    show_message("usage: " __STATUS_HELP__ "\n");
+    show_message("Following are the available flags and arguments:");
 
     for (size_t i=0;i<flags_size;++i){
-        printf("  %s|%s: %s\n",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
+        show_message("  %s|%s: %s",(flags+i)->shortId,(flags+i)->longId,(flags+i)->long_description);
     }
     for (size_t i=0;i<valargs_size;++i){
-        printf("  %s|%s: %s\n",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
+        show_message("  %s|%s: %s",(valargs+i)->shortId,(valargs+i)->longId,(valargs+i)->long_description);
     }
 }
 
@@ -158,8 +158,6 @@ void process_status(int argc,char** argv){
 
     log_message("head commit is %s",head_commit);
 
-    //printf("head_commit: %s\n",head_commit);
-
     struct jvc_commit* head_commit_obj = commit_get_commit(archive,head_commit);
 
     struct hash_map* hash_map_current_state = iterate_zip(archive);
@@ -174,22 +172,11 @@ void process_status(int argc,char** argv){
 
     log_message("options size: %d\n",*(options_sizes + ('p'-'a')));
 
-    // for (int i=0;i<options_sizes['p'-'a'];++i){
-    //     log_message("%s",options_array['p'-'a'][i]);
-    // }
     map_get_difference(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
 
     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
-
-    // if (options_sizes['p'-'a'] == 0){
-    //     log_message("calling show_all_diff");
-    //     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
-    // } else{
-    //     log_message("calling show_particular_diff");
-    //     show_particular_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
-    // }
     
-    if (does_changes_exist) printf("commit the changes to track them\n");
+    if (does_changes_exist) show_message("commit the changes to track them\n");
 }
 
 // enum path_status status_get_path_status(struct zip* archive,char* path){

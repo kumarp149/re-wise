@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include "constants.h"
 #include "string.h"
+#include "commit.h"
+#include "zip.h"
 
 /*free the returned pointer after usage*/
 char* blob_get_path(const char* blob_id);
+
+char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path);
 
 #endif

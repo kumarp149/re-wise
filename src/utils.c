@@ -16,7 +16,6 @@ char* sha256_zip_file_ng(zip_file_t* file){
         // zip_error_t *error = zip_file_get_error(file);
         // int zip_error_code = zip_error_code_zip(error);
         // show_message("error code: %d\n",zip_error_code);
-        show_message("error getting hash of the file");
         //__JVC_ERROR_MESSAGE__ = JVC_UNABLE_TO_READ_FILE;
         return NULL;
     }

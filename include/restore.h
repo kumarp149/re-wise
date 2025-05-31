@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include "args.h"
 #include "constants.h"
+#include "blob.h"
+#include "utils.h"
+#include "print.h"
 
 
 #define __RESTORE_HELP__ __CONSTANTS_RW_PGMNAME__ " restore <archive> <arg> <val>"
@@ -14,7 +17,7 @@
   X("--help","-h" , "help","display this usage", (__RESTORE_FLAGBIT_HELP__)) \
 
 #define __RESTORE_ARGS__ \
-  X(false,"--path","-p","path","restore the specific paths from the HEAD commit (regex unsupported)",(1<<20)) \
+  X(true,"--path","-p","path","restore the specific paths from the HEAD commit (regex unsupported)",(1<<20)) \
 
 void process_restore(int argc,char** argv);
 

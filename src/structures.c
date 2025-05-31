@@ -36,12 +36,9 @@ bool hash_map_isempty(hash_map* map){
 void hash_map_insert(hash_map* map,const char* key, const char* value){
     unsigned int index = hash(key);
 
-    //printf("hash_map_insert: key: %d, value: %s\n",index,value);
-
     hash_node* node = map->buckets[index];
 
     while(node){
-        //printf("hash_map_insert iterating: key: %s\n",node->key);
         if (strcmp(node->key,key) == 0){
             free(node->value);
             node->value = strdup(value);
@@ -134,7 +131,6 @@ char *serialize_hash_map_to_binary(hash_map *map, size_t *binary_size) {
     }
 
     // Step 4: Return the binary string and its size
-    //printf("exiting");
     *binary_size = total_size;
     return binary_data;
 }
@@ -201,10 +197,8 @@ void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first,
 
         while(node){
             if (hash_map_get(second,node->key) == NULL){
-                //printf("%s is present only in first\n",node->key);
                 hash_map_insert(only_first,node->key,"");
             } else{
-                //printf("%s is present only in both\n",node->key);
                 hash_map_insert(both_present,node->key,"");
             }
             node = node->next;

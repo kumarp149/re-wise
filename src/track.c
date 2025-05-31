@@ -32,7 +32,6 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
             zip_file_t* file = zip_fopen(archive,name,0);
             char* file_hash = sha256_zip_file_ng(file);
             hash_map_insert(map,name,file_hash);
-            //printf("inserting key: %s\n",name);
             zip_fclose(file);
 
             char* time = timer_timestamp();
@@ -119,11 +118,11 @@ void track(struct zip* archive, int flags,char ***option_values){
 
 /*checks if head and index are already present*/
 void show_track_usage(){
-    printf("usage: "__TRACK_HELP__"\n\n");
-    printf("Following are the available flags and arguments:\n");
+    show_message("usage: "__TRACK_HELP__"\n");
+    show_message("Following are the available flags and arguments:");
     
     for (unsigned long long i=0;i<sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
-        printf("  %-10s: %s\n", track_option_names[i], track_option_descriptions[i]);
+        show_message("  %-10s: %s", track_option_names[i], track_option_descriptions[i]);
     }
 }
 
@@ -133,7 +132,6 @@ hash_map* load_options(){
     for (unsigned long long i=0;i < sizeof(track_option_names)/sizeof(track_option_names[0]);++i){
         char* token = strtok(strdup(track_option_names[i]),"|");
         while(token != NULL){
-            //printf("inserting %s and %s\n",token,track_option_descriptions[i]);
             hash_map_insert(options_map,token,track_option_descriptions[i]);
             token = strtok(NULL,"|");
         }

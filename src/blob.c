@@ -31,3 +31,9 @@ char* blob_get_path(const char* blob_id){
 
     return blob_path;
 }
+
+char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path){
+    struct jvc_commit* commit = commit_get_commit(archive,commit_id);
+
+    return hash_map_get(commit->tree->map,path);
+}
