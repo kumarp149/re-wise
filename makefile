@@ -1,5 +1,5 @@
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
-		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o
+		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o bin/restore.o
 CC = gcc
 LIB = -L/opt/homebrew/Cellar/openssl@3/3.4.1/lib/ -L/opt/homebrew/Cellar/libzip/1.11.3/lib/ -lzip \
 	  -lssl -lcrypto
@@ -22,7 +22,7 @@ bin/track.o: src/track.c include/track.h include/structures.h include/sha256.h i
 			 include/args.h include/print.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/file.o: src/file.c include/print.h include/track.h include/utils.h include/status.h include/regex.h
+bin/file.o: src/file.c include/print.h include/track.h include/utils.h include/status.h include/regex.h include/commit.h include/restore.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/sha256.o: src/sha256.c include/sha256.h include/constants.h include/print.h
@@ -52,4 +52,7 @@ bin/print.o: src/print.c include/print.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/regex.o: src/regex.c include/regex.h
+	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
+
+bin/restore.o: src/restore.c include/restore.h include/args.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@

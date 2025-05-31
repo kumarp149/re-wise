@@ -17,7 +17,7 @@
   X("--help","-h" , "help","display this usage", (__STATUS_FLAGBIT_HELP__)) \
 
 #define __STATUS_ARGS__ \
-  X(false,"--path","-p","path","display the status of specific paths",(1<<20)) \
+  X(false,"--path","-p","path","display the status of specific paths (regex supported)",(1<<20)) \
 
 #define __STATUS_MODIFIED__ "modified:"
 

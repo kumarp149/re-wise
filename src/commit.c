@@ -304,6 +304,11 @@ void process_commit(int argc,char** argv){
         #undef X
     };
 
+    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
+        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
+        return;
+    }
+
     struct zip* archive;
 
     int command_flags = 0;

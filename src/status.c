@@ -15,14 +15,22 @@ void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_val
 void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
     log_message("showing all diff");
     bool no_changes = true;
+    bool no_changes_in_matching_paths = true;
     if (hash_map_isempty(only_index) == false){
         no_changes = false;
         log_message("only index is not empty");
-        show_message(__STATUS_DELETED__);
+        bool flag = false;
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_index->buckets[i];
             while(node){
-                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)) show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)){
+                    if (flag == false){
+                        flag = true;
+                        show_message(__STATUS_DELETED__);
+                    }
+                    no_changes_in_matching_paths = false;
+                    show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                }
                 node = node->next;
             }
         }
@@ -30,29 +38,37 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
 
     if (hash_map_isempty(only_current) == false){
         no_changes = false;
-        show_message("\n" __STATUS_CREATED__);
+        bool flag = false;
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_current->buckets[i];
             while(node){
-                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key))show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)){
+                    if (flag == false){
+                        flag = true;
+                        show_message("\n" __STATUS_CREATED__);
+                    }
+                    no_changes_in_matching_paths = false;
+                    show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
+                }
                 node = node->next;
             }
         }
     }
 
-    bool isDiffFound = false;
-
     if (hash_map_isempty(both) == false){
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = both->buckets[i];
+            bool flag = false;
             while(node){
                 if (strcmp(hash_map_get(index,node->key),hash_map_get(current,node->key)) != 0){
-                    if (isDiffFound == false){
-                        show_message("\n" __STATUS_MODIFIED__);
-                        isDiffFound = true;
-                        no_changes = false;
+                    if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)){
+                        if (flag == false){
+                            flag = true;
+                            show_message("\n" __STATUS_MODIFIED__);
+                        }
+                        no_changes_in_matching_paths = false;
+                        show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
                     }
-                    if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)) show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "   %s" __CONSTANTS_RW_COLOR_END__,node->key);
                 }
                 node = node->next;
             }
@@ -63,6 +79,8 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
 
     if (no_changes == true){
         show_message("the archive is clean, no changes to commit");
+    } else if (no_changes_in_matching_paths == true){
+        show_message("no changes in the pathspecs given");
     }
 }
 
@@ -103,6 +121,11 @@ void process_status(int argc,char** argv){
             __STATUS_ARGS__
         #undef X
     };
+
+    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
+        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
+        return;
+    }
 
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};

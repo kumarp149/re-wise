@@ -7,6 +7,8 @@
 #include "../include/status.h"
 #include "../include/print.h"
 #include "../include/regex.h"
+#include "../include/restore.h"
+#include "../include/commit.h"
 #define BUFFER_SIZE 8192
 
 
@@ -24,7 +26,10 @@ int main(int argc,char** argv) {
         //log_message(argc,argv);
         log_message("running commit");
         process_commit(argc,argv);
-    } else{
+    } else if (strcmp(argv[1],"restore") == 0){
+        process_restore(argc,argv);
+    } 
+    else{
         printf("%d\n",regex_is_matching("abc/pqr","abc/pqr")); //1
         printf("%d\n",regex_is_matching("a*","ab")); //1
         printf("%d\n",regex_is_matching("a?","ab")); //1

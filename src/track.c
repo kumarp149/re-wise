@@ -165,6 +165,11 @@ void process_track(int argc,char** argv){
         #undef X
     };
 
+    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
+        show_track_usage();
+        return;
+    }
+
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
