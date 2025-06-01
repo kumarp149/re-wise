@@ -13,12 +13,10 @@ void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_val
 }
 
 void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
-    log_message("showing all diff");
     bool no_changes = true;
     bool no_changes_in_matching_paths = true;
     if (hash_map_isempty(only_index) == false){
         no_changes = false;
-        log_message("only index is not empty");
         bool flag = false;
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_index->buckets[i];
@@ -75,13 +73,9 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
         }
     }
 
-    log_message("no_changes: %d\n",no_changes);
 
-    if (no_changes == true){
-        show_message("the archive is clean, no changes to commit");
-    } else if (no_changes_in_matching_paths == true){
-        show_message("no changes in the pathspecs given");
-    }
+    if (no_changes == true) show_message("the archive is clean, no changes to commit");
+    else if (no_changes_in_matching_paths == true) show_message("no changes in the pathspecs given");
 }
 
 // void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
@@ -156,8 +150,6 @@ void process_status(int argc,char** argv){
 
     char* head_commit = commit_get_head_commit(archive);
 
-    log_message("head commit is %s",head_commit);
-
     struct jvc_commit* head_commit_obj = commit_get_commit(archive,head_commit);
 
     struct hash_map* hash_map_current_state = iterate_zip(archive);
@@ -168,9 +160,6 @@ void process_status(int argc,char** argv){
     hash_map* map_both = create_hash_map();
 
     bool does_changes_exist = false;
-
-
-    log_message("options size: %d\n",*(options_sizes + ('p'-'a')));
 
     map_get_difference(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
 

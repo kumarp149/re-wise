@@ -46,15 +46,9 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
 
     *(content + content_size) = '\0';
 
-    log_message("binary content of a map is: %s and it's size is: %d\n",content,content_size);
-
     hash_map* map = deserialize_hash_map_from_binary(content,content_size);
 
     tree->map = map;
-
-    log_message("is tree map empty: %d",hash_map_isempty(tree->map));
-
-    log_message("value from key is: %s",hash_map_get(tree->map,"sample.txt"));
 
     return tree;
 }
