@@ -7,6 +7,7 @@
 #include "args.h"
 #include "sha256.h"
 #include "timer.h"
+#include "global.h"
 #include "errors.h"
 
 #define __COMMIT_TREE_PREFIX__ "tree: "

@@ -18,7 +18,7 @@ void restore_path(struct zip* archive,char* path){
     char* path_hash_in_head = blob_get_hash_atrevision(archive,head_commit,path);
 
     if (path_hash_in_head == NULL){
-        show_message("the path %s is not found at HEAD",path);
+        show_message("path %s is not found at HEAD",path);
         return;
     }
 
@@ -68,7 +68,7 @@ void process_restore(int argc,char** argv){
 
     int args_error_status = 0;
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    char* error_message = (char *)malloc(sizeof(char)*__RW_ARGSERROR_SIZE);
 
     ErrorCode errorCode = ERR_NOERROR;
 
@@ -89,6 +89,10 @@ void process_restore(int argc,char** argv){
     for (int i=0;i<options_sizes['p'-'a'];++i){
         restore_path(archive,options_array['p'-'a'][i]);
     }
+
+    __RW_MEMFREE__(error_message);
+    
+    //for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
 
     zip_close(archive);
     return;

@@ -63,7 +63,7 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     char* blob_path = blob_get_path(commit->id);
 
-    char* blob_content = (char *)malloc(sizeof(char)*JVC_STRING_BUFFER);
+    char* blob_content = (char *)malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t size_filled = 0;
 
@@ -94,8 +94,8 @@ char* commit_get_head_commit(struct zip* archive){
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
     char* commit_blob_path = blob_get_path(id);
-    char* line = (char *)malloc(sizeof(char)*1001);
-    char* prefix = (char *)malloc(sizeof(char)*100);
+    char* line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
+    char* prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);
 
     size_t line_size = 0;
     size_t prefix_size = 0;
@@ -109,7 +109,6 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         if (ch == '\n'){
             *(line + line_size) = '\0';
             if (strcmp(prefix,__COMMIT_TREE_PREFIX__) == 0){
-                log_message("forming the tree and it's map");
                 commit->tree = tree_get_tree(archive,line);
             } else if (strcmp(prefix,__COMMIT_PARENT_PREFIX__) == 0){
                 if (line_size == 0){
@@ -125,8 +124,8 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
             free(line);
             free(prefix);
 
-            line = (char *)malloc(sizeof(char)*1000);
-            prefix = (char *)malloc(sizeof(char)*100);
+            line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
+            prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);
 
             line_size = 0;
             prefix_size = 0;
@@ -149,14 +148,8 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         }
     }
 
-    if (line){
-        free(line);
-        line = NULL;
-    }
-    if (prefix){
-        free(prefix);
-        prefix = NULL;
-    }
+    __RW_MEMFREE__(line);
+    __RW_MEMFREE__(prefix);
 
     zip_fclose(file);
 
@@ -276,10 +269,6 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
     commit_blob->tree = tree_blob;
     commit_blob->message = option_values['m'-'a'][0];
 
-    log_message("head commit: %s",parent_commit->id);
-
-    log_message("new commit: %s",commit_blob->id);
-
     commit_add_blob(archive,commit_blob);
     tree_add_blob(archive,tree_blob);
     write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
@@ -314,13 +303,11 @@ void process_commit(int argc,char** argv){
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    char* error_message = (char *) malloc(sizeof(char)*__RW_ARGSERROR_SIZE);
 
     ErrorCode errCode = ERR_NOERROR;
 
     processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message,&errCode);
-
-    log_message("command_flags is: %d\n",command_flags);
 
     if (((command_flags) & (1<<__COMMIT_FLAGBIT_HELP_)) != 0){
         show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
@@ -332,21 +319,15 @@ void process_commit(int argc,char** argv){
     } else if (errCode != ERR_NOERROR){
         show_message(error_get_message(errCode));
         return;
-    } 
-
-    log_message("committing the changes in archive");
+    }
 
     create_new_commit(archive,options_array,command_flags);
 
-    log_message("successfully committed the changes");
+    zip_close(archive);
 
-    if (zip_close(archive) == -1){
-        log_message("error closing the archive: %s",zip_strerror(archive));
-    } else{
-        log_message("closed the zip successfully");
-    }
+    __RW_MEMFREE__(error_message);
 
-    log_message("closed the zip");
-
+    for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
+    
     return;
 }

@@ -92,7 +92,7 @@ void copy_file_inzip_ng(zip_t* archive,const char* file_from,const char* file_to
         zip_fclose(source_file);
     }
 
-    char* buffer = malloc(stat.size);
+    char* buffer = (char *)malloc(stat.size);
 
     if (zip_fread(source_file, buffer, stat.size) != (zip_int64_t) stat.size) {
         fprintf(stderr, "Failed to read source file content\n");
@@ -142,7 +142,7 @@ void copy_file_inzip(const char* zip_filename, const char* file_from, const char
         zip_close(archive);
     }
 
-    char* buffer = malloc(stat.size);
+    char* buffer = (char *)malloc(stat.size);
     if (!buffer) {
         fprintf(stderr, "Failed to allocate memory for file content\n");
         zip_fclose(source_file);
@@ -253,12 +253,7 @@ void write_to_file_inzip(const char* zip_filename, const char* file_path, const 
 
 
 void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz){
-    //printf("calling write_to_file_inzip_ng\n");
-    struct zip_source* source = zip_source_buffer(archive, content, sz, 0);
-
-    // printf("adding file: %s\n",file_path);
-
-    // printf("source created\n");
+    struct zip_source* source = zip_source_buffer(archive, content, sz, 1);
 
     if (!source){
         log_message("unable to create zip source\n");
@@ -270,8 +265,6 @@ void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,si
     } else{
         log_message("File added to zip successfully: %s\n",file_path);
     }
-
-    // printf("added content to file: %s\n",file_path);
 
     zip_source_close(source);
 }

@@ -20,7 +20,7 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     char* tree_blob_path = blob_get_path(id);
     size_t buffer_size = 1024;
 
-    char* content = (char *)malloc(sizeof(char)*JVC_STRING_BUFFER);
+    char* content = (char *)malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t content_size = 0;
 

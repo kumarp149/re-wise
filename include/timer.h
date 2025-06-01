@@ -3,6 +3,7 @@
 
 #include "time.h"
 #include <stdlib.h>
+#include "constants.h"
 
 char* timer_timestamp();
 

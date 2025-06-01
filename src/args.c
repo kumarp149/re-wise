@@ -1,7 +1,6 @@
 #include "../include/args.h"
 
 int get_arg_type(char* arg,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,struct args_flag** cur_flag,struct args_valarg** cur_valarg){
-    log_message("calling get_arg_type for arg: %s\n",arg);
     for (size_t i=0;i<flags_size;++i){
         if (strcmp(arg,(flags+i)->longId) == 0 || strcmp(arg,(flags+i)->shortId) == 0){
             *cur_flag = (flags+i);
@@ -33,8 +32,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
     *archive = zip_open(argv[2],ZIP_CHECKCONS,&archive_open_error);
 
-    log_message("archive open status from processArgs: %d\n",archive_open_error);
-
     *flag = 0;
 
     for (int i=3;i<argc;++i){
@@ -46,9 +43,7 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
         int arg_type = get_arg_type(arg,flags,flags_size,valargs,valargs_size,&cur_flag,&cur_valarg);
 
         if (arg_type == 1){
-            //(*flag) = (*flag) | (1 << (cur_flag->flagId));
             (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
-            log_message("flag present: %s",arg);
         } else if (arg_type == 2){
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;
@@ -57,6 +52,7 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
             if (option_counts[index] > 0){
                 countArgs = option_counts[index];
             } else{
+                //printf("option values init\n");
                 option_values[index] = malloc(((size_t)(argc - i)) * sizeof(char *));
             }
 
@@ -70,8 +66,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
             start--;
 
             i = start;
-
-            log_message("countArgs: %d",countArgs);
 
             if (countArgs > cur_valarg->maxCount){
                 *err = 1;
@@ -99,9 +93,7 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
     for (size_t i=0;i<valargs_size;++i){
         char *c = ((valargs+i)->shortId) + 1;
-        log_message("valargs character: %s, count: %d",c,*(option_counts + (c[0] - 'a')));
         if ((valargs+i)->mandatory == true && *(option_counts + (c[0] - 'a')) == 0){
-            log_message("valargs character: %s is mandatory but not given",c);
             *err = 1;
             sprintf(*error_message,"error: the argument <%s> is mandatory",(valargs+i)->short_description);
             return;
@@ -109,9 +101,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
     }
 
     if (archive_open_error != 0){
-
-        log_message("error opening the archive");
-
         if (archive_open_error == ZIP_ER_NOENT){
             *errorCode = ERR_ZIP_NOFILE;
             *error_message = argv[2];
