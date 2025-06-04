@@ -110,9 +110,7 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
         __ARGS_SHOW_USAGE_;
         return;
     } else if (arg_error_index > 0){
-        for (size_t i=0;i<arg_error_index;++i){
-            show_message(arg_errors[i]);
-        }
+        show_message(arg_errors[0]);
         __ARGS_SHOW_USAGE_;
         return;
     }

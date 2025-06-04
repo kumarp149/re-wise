@@ -85,8 +85,6 @@ char* commit_get_head_commit(struct zip* archive){
 
     *(head_commit_id + 64) = '\0';
 
-    log_message("head_commit: %s\n",head_commit_id);
-
     zip_fclose(head_file);
 
     return head_commit_id;
@@ -121,8 +119,8 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
                 commit->message = strdup(line);
             }
 
-            free(line);
-            free(prefix);
+            __RW_MEMFREE__(line);
+            __RW_MEMFREE__(prefix);
 
             line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
             prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);
@@ -253,10 +251,6 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
 
     tree_blob->id = sha256_string(tree_generator->data,tree_generator->sz);
     tree_blob->map = path_map;
-
-    struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
-
-    index_content->map = path_map;
 
     struct jvc_commit* commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
 

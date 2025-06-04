@@ -59,6 +59,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
             bool flag = false;
             while(node){
                 if (strcmp(hash_map_get(index,node->key),hash_map_get(current,node->key)) != 0){
+                    no_changes = false;
                     if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)){
                         if (flag == false){
                             flag = true;
@@ -76,6 +77,9 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
 
     if (no_changes == true) show_message("the archive is clean, no changes to commit");
     else if (no_changes_in_matching_paths == true) show_message("no changes in the pathspecs given");
+    else if (no_changes_in_matching_paths == false){
+        show_message("\ncommit the changes to track them");
+    }
 }
 
 // void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
@@ -146,7 +150,7 @@ void process_status(int argc,char** argv){
 
     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
     
-    if (does_changes_exist) show_message("commit the changes to track them\n");
+    if (does_changes_exist) show_message("commit the changes to track them");
 }
 
 // enum path_status status_get_path_status(struct zip* archive,char* path){
