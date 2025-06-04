@@ -289,45 +289,24 @@ void process_commit(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    }
-
     struct zip* archive;
 
     int command_flags = 0;
 
-    int args_error_status = 0;
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
-    char* error_message = (char *) malloc(sizeof(char)*__RW_ARGSERROR_SIZE);
+    int proceed_further;
 
-    ErrorCode errCode = ERR_NOERROR;
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_commit_usage,&proceed_further,__COMMIT_FLAGBIT_HELP_);
 
-    processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message,&errCode);
-
-    if (((command_flags) & (1<<__COMMIT_FLAGBIT_HELP_)) != 0){
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s\n",error_message);
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (errCode != ERR_NOERROR){
-        show_message(error_get_message(errCode));
-        return;
-    }
+    if (proceed_further != 1) return;
 
     create_new_commit(archive,options_array,command_flags);
 
     zip_close(archive);
 
-    __RW_MEMFREE__(error_message);
-
-    for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
+    // for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
     
     return;
 }

@@ -163,11 +163,6 @@ void process_track(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_track_usage();
-        return;
-    }
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
@@ -175,25 +170,11 @@ void process_track(int argc,char** argv){
 
     int command_flags = 0;
 
-    int args_error_status = 0;
+    int proceed_further;
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_track_usage,&proceed_further,__TRACK_FLAGBIT_HELP__);
 
-    ErrorCode errorCode = ERR_NOERROR;
-
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
-
-    if (((command_flags) & (1<<__TRACK_FLAGBIT_HELP__)) != 0){
-        show_track_usage();
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s",error_message);
-        show_track_usage();
-        return;
-    } else if (errorCode != ERR_NOERROR){
-        show_message(error_get_message(errorCode),error_message);
-        return;
-    }
+    if (proceed_further != 1) return;
 
     track(archive,command_flags,options_array);
 

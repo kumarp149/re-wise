@@ -116,11 +116,6 @@ void process_status(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    }
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
@@ -128,25 +123,11 @@ void process_status(int argc,char** argv){
 
     int command_flags = 0;
 
-    int args_error_status = 0;
+    int proceed_further;
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_status_usage,&proceed_further,__STATUS_FLAGBIT_HELP__);
 
-    ErrorCode errorCode = ERR_NOERROR;
-
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
-
-    if (((command_flags) & (1<<__STATUS_FLAGBIT_HELP__)) != 0){
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s\n",error_message);
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (errorCode != ERR_NOERROR){
-        show_message(error_get_message(errorCode));
-        return;
-    }
+    if (proceed_further != 1) return;
 
     char* head_commit = commit_get_head_commit(archive);
 

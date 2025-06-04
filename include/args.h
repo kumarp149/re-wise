@@ -39,6 +39,7 @@ valargs
 option_values
 error_message
 */
-void processArgs(int argc,char** argv,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,zip_t** archive,int* flag,char ***option_values, int *option_counts,int* err,char** error_message, ErrorCode* errorCode);
 
+#define __ARGS_SHOW_USAGE_ show_usage(flags, flags_size, valargs, valargs_size)
+void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit);
 #endif

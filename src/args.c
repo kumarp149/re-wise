@@ -27,7 +27,17 @@ bool is_probable_option(char* arg){
     return false;
 }
 
-void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts, int* err, char** error_message, ErrorCode* errorCode){
+void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit){
+    *proceed_further = 0;
+    if (argc == 2){
+        __ARGS_SHOW_USAGE_;
+        return;
+    }
+
+    char** arg_errors = (char **)malloc(sizeof(char *)*10);
+
+    size_t arg_error_index = 0;
+
     int archive_open_error = 0;
 
     *archive = zip_open(argv[2],ZIP_CHECKCONS,&archive_open_error);
@@ -42,9 +52,8 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
         int arg_type = get_arg_type(arg,flags,flags_size,valargs,valargs_size,&cur_flag,&cur_valarg);
 
-        if (arg_type == 1){
-            (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
-        } else if (arg_type == 2){
+        if (arg_type == 1) (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
+        else if (arg_type == 2){
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;
             int countArgs = 0;
@@ -52,7 +61,6 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
             if (option_counts[index] > 0){
                 countArgs = option_counts[index];
             } else{
-                //printf("option values init\n");
                 option_values[index] = malloc(((size_t)(argc - i)) * sizeof(char *));
             }
 
@@ -68,47 +76,46 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
             i = start;
 
             if (countArgs > cur_valarg->maxCount){
-                *err = 1;
-                sprintf(*error_message,"error: more than necessary arguments provided for the option <%s>",cur_valarg->short_description);
-                return;
+                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+                sprintf(arg_errors[arg_error_index], "error: more than necessary arguments provided for the option <%s>",cur_valarg->short_description);
+                arg_error_index++;
             } else if (cur_valarg->mandatory == true && countArgs <= 0){
-                *err = 1;
                 if (cur_valarg->maxCount == 1){
-                    sprintf(*error_message,"error: option <%s> expects an argument",cur_valarg->short_description);
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+                    sprintf(arg_errors[arg_error_index], "error: option <%s> expects an argument",cur_valarg->short_description);
+                    arg_error_index++;
                 } else{
-                    sprintf(*error_message,"error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+                    sprintf(arg_errors[arg_error_index], "error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                    arg_error_index++;
                 }
-                
-                return;
             }
-        } else{
-            *err = 1;
-            sprintf(*error_message, "error: unknown argument <%s> provided", arg);
-            return;
-        }
 
-        cur_flag = NULL;
-        cur_valarg = NULL;
+        } else{
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+            sprintf(arg_errors[arg_error_index], "error: unknown argument <%s> provided", arg);
+            arg_error_index++;
+        }
     }
 
     for (size_t i=0;i<valargs_size;++i){
         char *c = ((valargs+i)->shortId) + 1;
         if ((valargs+i)->mandatory == true && *(option_counts + (c[0] - 'a')) == 0){
-            *err = 1;
-            sprintf(*error_message,"error: the argument <%s> is mandatory",(valargs+i)->short_description);
-            return;
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+            sprintf(arg_errors[arg_error_index], "error: the argument <%s> is mandatory",(valargs+i)->short_description);
+            arg_error_index++;
         }
     }
-
-    if (archive_open_error != 0){
-        if (archive_open_error == ZIP_ER_NOENT){
-            *errorCode = ERR_ZIP_NOFILE;
-            *error_message = argv[2];
-        } else if (archive_open_error == ZIP_ER_NOZIP){
-            *errorCode = ERR_ZIP_NOT_VALID;
-            *error_message = argv[2];
-        } else if (archive_open_error == ZIP_ER_OPEN){
-            *errorCode = ERR_UNKNOWN;
+    if (((*flag) & (1 << help_bit)) != 0){
+        __ARGS_SHOW_USAGE_;
+        return;
+    } else if (arg_error_index > 0){
+        for (size_t i=0;i<arg_error_index;++i){
+            show_message(arg_errors[i]);
         }
+        __ARGS_SHOW_USAGE_;
+        return;
     }
+    *proceed_further = 1;
+    return;
 }

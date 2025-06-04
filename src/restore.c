@@ -66,34 +66,16 @@ void process_restore(int argc,char** argv){
 
     int command_flags = 0;
 
-    int args_error_status = 0;
+    int proceed_further;
 
-    char* error_message = (char *)malloc(sizeof(char)*__RW_ARGSERROR_SIZE);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_restore_usage,&proceed_further,__RESTORE_FLAGBIT_HELP__);
 
-    ErrorCode errorCode = ERR_NOERROR;
-
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
-
-    if (((command_flags) & (1<<__RESTORE_FLAGBIT_HELP__)) != 0){
-        show_restore_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s\n",error_message);
-        show_restore_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (errorCode != ERR_NOERROR){
-        show_message(error_get_message(errorCode));
-        return;
-    }
+    if (proceed_further != 1) return;
 
     for (int i=0;i<options_sizes['p'-'a'];++i){
         restore_path(archive,options_array['p'-'a'][i]);
     }
-
-    __RW_MEMFREE__(error_message);
     
-    //for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
-
     zip_close(archive);
     return;
 }
