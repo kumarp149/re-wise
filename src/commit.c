@@ -299,8 +299,14 @@ void process_commit(int argc,char** argv){
     create_new_commit(archive,options_array,command_flags);
 
     zip_close(archive);
-
-    // for (size_t i=0;i<__ARGS_OPTION_TYPES__;++i) __RW_MEMFREE__(options_array[i]);
     
     return;
+}
+
+bool commit_is_valid(struct zip* archive,char* commit_id){
+    char* blob_path = blob_get_path(commit_id);
+
+    if (!file_exists_inzip_ng(archive,blob_path)) return false;
+
+    return true;
 }

@@ -10,7 +10,7 @@
 
 /*JVC_VERSIONS contain all the versions of the jar, named with a unique checksum. Each file will have a name, parent version (i.e. previous version)
 and a pointer to a tree file*/
-#define JVC_VERSIONS "versions/"
+#define __CONSTANTS_RW_VERSIONS__ "versions/"
 
 /*__CONSTANTS_RW_INDEX__ contains a list of all files and their checksums*/
 #define __CONSTANTS_RW_INDEX__ "index"

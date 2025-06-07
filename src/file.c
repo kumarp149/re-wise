@@ -9,6 +9,7 @@
 #include "../include/regex.h"
 #include "../include/restore.h"
 #include "../include/commit.h"
+#include "../include/version.h"
 #define BUFFER_SIZE 8192
 
 
@@ -28,8 +29,9 @@ int main(int argc,char** argv) {
         process_commit(argc,argv);
     } else if (strcmp(argv[1],"restore") == 0){
         process_restore(argc,argv);
-    } 
-    else{
+    } else if (strcmp(argv[1],"version") == 0){
+        process_version(argc,argv);
+    } else{
         printf("%d\n",regex_is_matching("abc/pqr","abc/pqr")); //1
         printf("%d\n",regex_is_matching("a*","ab")); //1
         printf("%d\n",regex_is_matching("a?","ab")); //1

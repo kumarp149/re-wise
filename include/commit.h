@@ -47,4 +47,6 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id);
 
 void process_commit(int argc,char** argv);
 
+bool commit_is_valid(struct zip* archive,char* commit_id);
+
 #endif
