@@ -2,15 +2,24 @@
 
 void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
     char* blob_path = blob_get_path(tree->id);
+
+    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+    blob_type_path[0] = '\0';
+
+    strcat(blob_type_path,blob_path);
+    strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    blob_type_path[sz] = '\0';
+
     size_t blob_size = 0;
     
     char* blob_content = serialize_hash_map_to_binary(tree->map,&blob_size);
     write_to_file_inzip_ng(archive,blob_path,blob_content,blob_size);
 
-    // if (blob_path){
-    //     free(blob_path);
-    //     blob_path = NULL;
-    // }
+    write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_TREE_IDENTIFIER__,strlen(__CONSTANTS_RW_TREE_IDENTIFIER__));
 }
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id){

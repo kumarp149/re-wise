@@ -37,3 +37,7 @@ char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path){
 
     return hash_map_get(commit->tree->map,path);
 }
+
+// BLOB_TYPE blob_get_type(struct zip* archive,char* blob_id){
+      
+// }

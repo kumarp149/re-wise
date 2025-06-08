@@ -63,6 +63,17 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     char* blob_path = blob_get_path(commit->id);
 
+    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+    blob_type_path[0] = '\0';
+
+    strcat(blob_type_path,blob_path);
+    strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    blob_type_path[sz] = '\0';
+
     char* blob_content = (char *)malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t size_filled = 0;
@@ -74,6 +85,8 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
     *(blob_content+size_filled) = '\0';
 
     write_to_file_inzip_ng(archive,blob_path,blob_content,size_filled);
+
+    write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_COMMIT_IDENTIFIER__,strlen(__CONSTANTS_RW_COMMIT_IDENTIFIER__));
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -234,7 +247,21 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
         while(node){
             char* path = blob_get_path(node->value);
 
+            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+            blob_type_path[0] = '\0';
+
+            strcat(blob_type_path,path);
+
+            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            blob_type_path[sz] = '\0';
+
             copy_file_inzip_ng(archive,node->key,path);
+
+            write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
 
             node = node->next;
 

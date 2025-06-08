@@ -253,7 +253,7 @@ void write_to_file_inzip(const char* zip_filename, const char* file_path, const 
 
 
 void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz){
-    struct zip_source* source = zip_source_buffer(archive, content, sz, 1);
+    struct zip_source* source = zip_source_buffer(archive, content, sz, 0);
 
     if (!source){
         log_message("unable to create zip source\n");

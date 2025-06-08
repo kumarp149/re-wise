@@ -21,6 +21,15 @@ and a pointer to a tree file*/
 /*__CONSTANTS_RW_TREES__ contains the trees, named with a unique checksum. Each file will have the map from file path to object*/
 #define __CONSTANTS_RW_TREES__ "trees/"
 
+#define __CONSTANTS_RW_BLOBTYPE_IDENTIFIER__ ".type"
+
+#define __CONSTANTS_RW_COMMIT_IDENTIFIER__ "COMMIT"
+
+#define __CONSTANTS_RW_TREE_IDENTIFIER__ "TREE"
+
+#define __CONSTANTS_RW_BLOB_IDENTIFIER__ "BLOB"
+
+
 #define JVC_BUFFER 8192
 
 #define __CONSTANTS_HASH_GENERATOR_SIZE__ 20000

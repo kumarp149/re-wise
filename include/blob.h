@@ -12,4 +12,10 @@ char* blob_get_path(const char* blob_id);
 
 char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path);
 
+typedef enum{
+    BLOB_COMMIT,
+    BLOB_TREE,
+    BLOB_OBJECT
+} BLOB_TYPE;
+
 #endif

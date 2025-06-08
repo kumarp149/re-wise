@@ -12,6 +12,7 @@
 #include "args.h"
 #include "tree.h"
 #include "print.h"
+#include "string.h"
 
 /*
 

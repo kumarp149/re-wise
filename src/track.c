@@ -22,7 +22,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
-    for (zip_uint64_t i = num_entries - 1; i >= 0; i--){
+    for (zip_uint64_t i = 0; i < num_entries; i++){
         const char *name = zip_get_name(archive, i, 0);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
@@ -78,7 +78,21 @@ void track(struct zip* archive, int flags,char ***option_values){
         while(node){
             char* path = blob_get_path(node->value);
 
+            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+            blob_type_path[0] = '\0';
+
+            strcat(blob_type_path,path);
+
+            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            blob_type_path[sz] = '\0';
+
             copy_file_inzip_ng(archive,node->key,path);
+
+            write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
 
             node = node->next;
         }
