@@ -43,4 +43,6 @@ void delete_folder_inzip_ng(struct zip* archive,const char* folder_path);
 
 hash_map* iterate_zip(struct zip* archive);
 
+char* read_from_file_inzip_ng(zip_t* archive, const char* file_path);
+
 #endif

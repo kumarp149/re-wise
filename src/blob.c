@@ -38,6 +38,28 @@ char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path){
     return hash_map_get(commit->tree->map,path);
 }
 
+char* blob_get_type_path(const char* blob_id){
+    char* path = blob_get_path(blob_id);
+
+    size_t sz = strlen(path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) + 1;
+
+    char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+    size_t index = 0;
+
+    memcpy(blob_type_path + index,path,strlen(path));
+
+    index += strlen(path);
+
+    memcpy(blob_type_path + index,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__));
+
+    index += strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    *(blob_type_path + index) = '\0';
+
+    return blob_type_path;
+}
+
 // BLOB_TYPE blob_get_type(struct zip* archive,char* blob_id){
-      
+//     char* blob_type_path = blob_get_type_path((const char*) blob_id);
 // }

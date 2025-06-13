@@ -9,6 +9,7 @@
 #include "timer.h"
 #include "global.h"
 #include "errors.h"
+#include "constants.h"
 
 #define __COMMIT_TREE_PREFIX__ "tree: "
 #define __COMMIT_PARENT_PREFIX__ "parent: "

@@ -12,6 +12,8 @@ char* blob_get_path(const char* blob_id);
 
 char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path);
 
+char* blob_get_type_path(const char* blob_id);
+
 typedef enum{
     BLOB_COMMIT,
     BLOB_TREE,

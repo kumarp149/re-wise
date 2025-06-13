@@ -332,8 +332,11 @@ void process_commit(int argc,char** argv){
 
 bool commit_is_valid(struct zip* archive,char* commit_id){
     char* blob_path = blob_get_path(commit_id);
+    char* blob_path_type = blob_get_type_path(commit_id);
 
-    if (!file_exists_inzip_ng(archive,blob_path)) return false;
+    if (!file_exists_inzip_ng(archive,blob_path) || !(file_exists_inzip_ng(archive,blob_path_type))) return false;
 
-    return true;
+    char* blob_type = read_from_file_inzip_ng(archive,(const char*) blob_path_type);
+
+    return !(strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__));
 }

@@ -333,3 +333,52 @@ hash_map* iterate_zip(struct zip* archive){
 
     return map_current_state;
 }
+
+char* read_from_file_inzip_ng(zip_t* archive, const char* file_path) {
+    if (!archive || !file_path) {
+        fprintf(stderr, "Invalid input: archive or file_path is NULL\n");
+        return NULL;
+    }
+
+    // Locate file in the archive
+    zip_uint64_t index = (zip_uint64_t) zip_name_locate(archive, file_path, ZIP_FL_ENC_GUESS);
+    if (index < 0) {
+        fprintf(stderr, "File not found in ZIP archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Get file metadata (for size)
+    struct zip_stat st;
+    zip_stat_init(&st);
+    if (zip_stat_index(archive, index, ZIP_FL_ENC_GUESS, &st) != 0) {
+        fprintf(stderr, "Failed to stat file in archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Open the file inside the archive
+    zip_file_t* file = zip_fopen_index(archive, index, ZIP_FL_UNCHANGED);
+    if (!file) {
+        fprintf(stderr, "Failed to open file in archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Allocate memory and read content
+    char* buffer = (char*)malloc(st.size + 1);
+    if (!buffer) {
+        fprintf(stderr, "Memory allocation failed\n");
+        zip_fclose(file);
+        return NULL;
+    }
+
+    zip_int64_t bytes_read = zip_fread(file, buffer, st.size);
+    if (bytes_read < 0) {
+        fprintf(stderr, "Error reading file in archive: %s\n", file_path);
+        free(buffer);
+        zip_fclose(file);
+        return NULL;
+    }
+
+    buffer[bytes_read] = '\0'; // Null-terminate
+    zip_fclose(file);
+    return buffer;
+}
