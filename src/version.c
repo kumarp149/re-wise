@@ -63,7 +63,8 @@ void process_version(int argc,char** argv){
 
     if (proceed_further != 1) return;
 
-    char* commit_id = options_array['c'-'a'][0];
+    char* commit_id = commit_resolve_commit(archive,options_array['c'-'a'][0]);
+    
     char* version_name = options_array['n'-'a'][0];
 
     char* version_path = version_get_path(version_name);

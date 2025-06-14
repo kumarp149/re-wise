@@ -29,6 +29,8 @@ and a pointer to a tree file*/
 
 #define __CONSTANTS_RW_BLOB_IDENTIFIER__ "BLOB"
 
+#define __CONSTANTS_RW_HEAD_IDENTIFIER_ "HEAD"
+
 
 #define JVC_BUFFER 8192
 

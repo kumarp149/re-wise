@@ -60,6 +60,27 @@ char* blob_get_type_path(const char* blob_id){
     return blob_type_path;
 }
 
+char* blob_get_commitid(char *commit_object_path){
+    char* occur = strchr(strchr(commit_object_path,'/')+1,'/');
+    char* commit_id = (char *)malloc(65);
+
+    size_t index = 0;
+
+    while(*occur != '\0'){
+        if (*occur == '/'){
+            occur++;
+            continue;
+        }
+        *(commit_id + index) = *occur;
+        occur++;
+        index++;
+    }
+
+    commit_id[index] = '\0';
+
+    return commit_id;
+}
+
 // BLOB_TYPE blob_get_type(struct zip* archive,char* blob_id){
 //     char* blob_type_path = blob_get_type_path((const char*) blob_id);
 // }

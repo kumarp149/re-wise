@@ -340,3 +340,65 @@ bool commit_is_valid(struct zip* archive,char* commit_id){
 
     return !(strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__));
 }
+
+char* commit_resolve_commit(struct zip* archive,char *identifier){
+    if (strcmp(identifier,__CONSTANTS_RW_HEAD_IDENTIFIER_) == 0) return commit_get_head_commit(archive);
+
+    if (strlen(identifier) < 3){
+        return NULL;
+    }
+
+    size_t sz = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(identifier) + 1;
+
+    size_t index = 0;
+
+    char* identifier_prefix = (char *)malloc(sizeof(char) * sz);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
+
+    index += strlen(__CONSTANTS_RW_BASE__);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
+
+    index += strlen(__CONSTANTS_RW_BLOBS__);
+
+    memcpy(identifier_prefix + index,identifier,2);
+
+    index += 2;
+
+    identifier_prefix[index] = '/';
+
+    index++;
+
+    memcpy(identifier_prefix + index,identifier+2,strlen(identifier)-2);
+
+    index += strlen(identifier)-2;
+
+    identifier_prefix[index] = '\0';
+
+    int count = 0;
+    
+    zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
+
+    size_t prefix_len = strlen(identifier_prefix);
+    
+    char* commit_blob_path;
+
+    for (zip_uint64_t i = 0; i < num_entries; ++i){
+        const char* name = zip_get_name(archive, i, ZIP_FL_ENC_GUESS);
+        if (!name) continue;
+        if (strstr(name,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) != NULL) continue;
+
+        if (strncmp(name, identifier_prefix, prefix_len) == 0){
+            count++;
+            commit_blob_path = strdup(name);
+        }
+    }
+    if (count == 0) return NULL;
+    if (count > 1) return NULL;
+
+    char* commit_id = blob_get_commitid(commit_blob_path);
+
+    return commit_id;
+
+}
