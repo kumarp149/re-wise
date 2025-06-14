@@ -341,10 +341,11 @@ bool commit_is_valid(struct zip* archive,char* commit_id){
     return !(strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__));
 }
 
-char* commit_resolve_commit(struct zip* archive,char *identifier){
+char* commit_resolve_commit(struct zip* archive,char *identifier,char** message){
     if (strcmp(identifier,__CONSTANTS_RW_HEAD_IDENTIFIER_) == 0) return commit_get_head_commit(archive);
 
     if (strlen(identifier) < 3){
+        *message = "too less characters given to identify the commit";
         return NULL;
     }
 
@@ -393,9 +394,17 @@ char* commit_resolve_commit(struct zip* archive,char *identifier){
             count++;
             commit_blob_path = strdup(name);
         }
+
+        if (count > 1) break;
     }
-    if (count == 0) return NULL;
-    if (count > 1) return NULL;
+    if (count == 0){
+        *message = "no commit found with the given prefix";
+        return NULL;
+    }
+    if (count > 1){
+        *message = "too many commits found with the given prefix";
+        return NULL;
+    }
 
     char* commit_id = blob_get_commitid(commit_blob_path);
 

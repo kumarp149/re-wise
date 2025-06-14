@@ -1,7 +1,7 @@
-#include "../include/version.h"
+#include "../include/tag.h"
 
-char* version_get_path(const char* commit_id){
-    size_t version_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_VERSIONS__) + strlen(commit_id) + 1;
+char* tag_get_path(const char* commit_id){
+    size_t version_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_TAGS__) + strlen(commit_id) + 1;
 
     size_t sz = 0;
 
@@ -11,9 +11,9 @@ char* version_get_path(const char* commit_id){
 
     sz += strlen(__CONSTANTS_RW_BASE__);
 
-    memcpy(version_path + sz,__CONSTANTS_RW_VERSIONS__,strlen(__CONSTANTS_RW_VERSIONS__));
+    memcpy(version_path + sz,__CONSTANTS_RW_TAGS__,strlen(__CONSTANTS_RW_TAGS__));
 
-    sz += strlen(__CONSTANTS_RW_VERSIONS__);
+    sz += strlen(__CONSTANTS_RW_TAGS__);
 
     memcpy(version_path + sz,commit_id,strlen(commit_id));
 
@@ -24,8 +24,8 @@ char* version_get_path(const char* commit_id){
     return version_path;
 }
 
-void show_version_usage(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size){
-    show_message("usage: " __VERSION_HELP__ "\n");
+void show_tag_usage(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size){
+    show_message("usage: " __TAG_HELP__ "\n");
     show_message("Following are the available flags and arguments:");
 
     for (size_t i=0;i<flags_size;++i){
@@ -36,17 +36,17 @@ void show_version_usage(struct args_flag* flags,size_t flags_size,struct args_va
     }
 }
 
-void process_version(int argc,char** argv){
+void process_tag(int argc,char** argv){
 
     struct args_flag flags[] = {
         #define X(longId, shortId, short_description, long_description, flagId) { longId, shortId, short_description, long_description, flagId },
-            __VERSION_FLAGS__
+            __TAG_FLAGS__
         #undef X
     };
 
     struct args_valarg valargs[] = {
         #define X(mandatory, longId, shortId, short_description, long_description, maxCount) {mandatory, longId, shortId, short_description, long_description, maxCount },
-            __VERSION_ARGS__
+            __TAG_ARGS__
         #undef X
     };
 
@@ -59,33 +59,38 @@ void process_version(int argc,char** argv){
 
     int proceed_further;
 
-    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_version_usage,&proceed_further,__VERSION_FLAGBIT_HELP__);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_tag_usage,&proceed_further,__TAG_FLAGBIT_HELP__);
 
     if (proceed_further != 1) return;
 
-    char* commit_id = commit_resolve_commit(archive,options_array['c'-'a'][0]);
+    char* commit_resolve_message;
+
+    char* commit_id = commit_resolve_commit(archive,options_array['c'-'a'][0],&commit_resolve_message);
+
+    if (commit_id == NULL){
+        show_message(commit_resolve_message);
+        return;
+    }
     
-    char* version_name = options_array['n'-'a'][0];
+    char* tag_name = options_array['n'-'a'][0];
 
-    char* version_path = version_get_path(version_name);
-
-    log_message("version_path: %s, commit_id: %s",version_path,commit_id);
+    char* tag_path = tag_get_path(tag_name);
 
     if (!commit_is_valid(archive,commit_id)){
         show_message("%s is not a valid commit",commit_id);
         return;
     }
 
-    if (file_exists_inzip_ng(archive,version_path) == true){
-        if (!(((command_flags) & (1 << __VERSION_FLAGBIT_FORCE__)) != 0)){
-            show_message("version %s already exists",version_name);
+    if (file_exists_inzip_ng(archive,tag_path) == true){
+        if (!(((command_flags) & (1 << __TAG_FLAGBIT_FORCE__)) != 0)){
+            show_message("tag %s already exists",tag_name);
             return;
         }
     }
 
-    write_to_file_inzip_ng(archive,version_path,commit_id,strlen(commit_id));
+    write_to_file_inzip_ng(archive,tag_path,commit_id,strlen(commit_id));
 
-    show_message("the commit %s is versioned as %s",commit_id,version_name);
+    show_message("the commit %s is versioned as %s",commit_id,tag_name);
 
     zip_close(archive);
 }

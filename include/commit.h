@@ -50,6 +50,6 @@ void process_commit(int argc,char** argv);
 
 bool commit_is_valid(struct zip* archive,char* commit_id);
 
-char* commit_resolve_commit(struct zip* archive,char *identifier);
+char* commit_resolve_commit(struct zip* archive,char *identifier,char** message);
 
 #endif

@@ -3,7 +3,7 @@ BUILD_ENV ?= local
 
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
 		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o bin/restore.o \
-		  bin/version.o
+		  bin/tag.o
 CC = gcc
 
 ifeq ($(BUILD_ENV),local)
@@ -38,7 +38,7 @@ bin/track.o: src/track.c include/track.h include/structures.h include/sha256.h i
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/file.o: src/file.c include/print.h include/track.h include/utils.h include/status.h include/regex.h include/commit.h include/restore.h \
-			include/global.h include/constants.h include/version.h
+			include/global.h include/constants.h include/tag.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/sha256.o: src/sha256.c include/sha256.h  include/print.h include/global.h include/constants.h
@@ -73,5 +73,5 @@ bin/regex.o: src/regex.c include/regex.h include/global.h include/constants.h
 bin/restore.o: src/restore.c include/restore.h include/args.h include/blob.h include/print.h include/utils.h include/global.h include/constants.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/version.o: src/version.c include/version.h include/args.h include/print.h include/constants.h include/utils.h include/print.h include/commit.h
+bin/tag.o: src/tag.c include/tag.h include/args.h include/print.h include/constants.h include/utils.h include/print.h include/commit.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
