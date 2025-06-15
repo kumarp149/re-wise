@@ -90,7 +90,7 @@ void process_tag(int argc,char** argv){
 
     write_to_file_inzip_ng(archive,tag_path,commit_id,strlen(commit_id));
 
-    show_message("the commit %s is versioned as %s",commit_id,tag_name);
+    show_message("the commit %s is tagged as %s",commit_id,tag_name);
 
     zip_close(archive);
 

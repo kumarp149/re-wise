@@ -377,8 +377,6 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
-    printf("number of entries: %llu\n", num_entries);
-
     size_t prefix_len = strlen(identifier_prefix);
     
     char* commit_blob_path;
@@ -389,7 +387,13 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
             continue;
         }
 
-        if (strncmp((const char *)name, identifier_prefix, prefix_len) == 0){
+        if (strncmp(name, __CONSTANTS_RW_BASE__ __CONSTANTS_RW_BLOBS__, strlen(__CONSTANTS_RW_BASE__ __CONSTANTS_RW_BLOBS__)) != 0){
+            continue;
+        }
+
+        char* object_id = blob_get_commitid((char *)name);
+
+        if (strncmp((const char *)name, identifier_prefix, prefix_len) == 0 && commit_is_valid(archive,object_id) == true){
             count++;
             commit_blob_path = strdup(name);
         }
