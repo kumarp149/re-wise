@@ -6,6 +6,8 @@ objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/t
 		  bin/tag.o bin/log.o
 CC = gcc
 
+BIN_DIR := bin
+
 ifeq ($(BUILD_ENV),local)
 
     LIB = -L/opt/homebrew/Cellar/openssl@3/3.5.0/lib/ -L/opt/homebrew/Cellar/libzip/1.11.3/lib/ -lzip \
@@ -23,9 +25,11 @@ endif
 
 OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations
 
-a.out: $(objects)
+a.out: $(BIN_DIR) $(objects)
 	$(CC) -g $(objects) $(LIB) -o a.out
 
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 bin/structures.o: src/structures.c include/structures.h include/print.h include/global.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
