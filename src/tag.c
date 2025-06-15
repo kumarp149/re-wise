@@ -93,4 +93,6 @@ void process_tag(int argc,char** argv){
     show_message("the commit %s is versioned as %s",commit_id,tag_name);
 
     zip_close(archive);
+
+    //__RW_MEMFREE__(commit_id);
 }

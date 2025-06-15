@@ -74,7 +74,7 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     blob_type_path[sz] = '\0';
 
-    char* blob_content = (char *)malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
+    char* blob_content = (char *) malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t size_filled = 0;
 
@@ -87,6 +87,8 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
     write_to_file_inzip_ng(archive,blob_path,blob_content,size_filled);
 
     write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_COMMIT_IDENTIFIER__,strlen(__CONSTANTS_RW_COMMIT_IDENTIFIER__));
+
+    //__RW_MEMFREE__(blob_type_path);
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -334,11 +336,28 @@ bool commit_is_valid(struct zip* archive,char* commit_id){
     char* blob_path = blob_get_path(commit_id);
     char* blob_path_type = blob_get_type_path(commit_id);
 
-    if (!file_exists_inzip_ng(archive,blob_path) || !(file_exists_inzip_ng(archive,blob_path_type))) return false;
+    if (!file_exists_inzip_ng(archive,blob_path) || !(file_exists_inzip_ng(archive,blob_path_type))){
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+
+        return false;
+    }
 
     char* blob_type = read_from_file_inzip_ng(archive,(const char*) blob_path_type);
 
-    return !(strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__));
+    if (strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__) == 0){
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+        __RW_MEMFREE__(blob_type);
+
+        return true;
+    } else{
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+        __RW_MEMFREE__(blob_type);
+
+        return false;
+    }
 }
 
 char* commit_resolve_commit(struct zip* archive,char *identifier,char** message){
@@ -381,22 +400,28 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
+    printf("number of entries: %llu\n", num_entries);
+
     size_t prefix_len = strlen(identifier_prefix);
     
     char* commit_blob_path;
 
     for (zip_uint64_t i = 0; i < num_entries; ++i){
         const char* name = zip_get_name(archive, i, ZIP_FL_ENC_GUESS);
-        if (!name) continue;
-        if (strstr(name,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) != NULL) continue;
+        if (!name || strstr(name,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) != NULL) {
+            continue;
+        }
 
-        if (strncmp(name, identifier_prefix, prefix_len) == 0){
+        if (strncmp((const char *)name, identifier_prefix, prefix_len) == 0){
             count++;
             commit_blob_path = strdup(name);
         }
 
         if (count > 1) break;
     }
+
+    __RW_MEMFREE__(identifier_prefix);
+
     if (count == 0){
         *message = "no commit found with the given prefix";
         return NULL;

@@ -1,5 +1,6 @@
 #include "../include/blob.h"
 
+/*free the memory of the returned pointer after use*/
 char* blob_get_path(const char* blob_id){
     size_t blob_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(blob_id) + 1;
 
@@ -80,7 +81,3 @@ char* blob_get_commitid(char *commit_object_path){
 
     return commit_id;
 }
-
-// BLOB_TYPE blob_get_type(struct zip* archive,char* blob_id){
-//     char* blob_type_path = blob_get_type_path((const char*) blob_id);
-// }
