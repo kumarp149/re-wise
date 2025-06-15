@@ -16,13 +16,18 @@ void log_commits(struct zip* archive){
     struct jvc_commit* commit = commit_get_commit(archive,commit_get_head_commit(archive));
 
     while(commit != NULL){
-        show_message("%s, %s",commit->id,commit->message);
+        show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "commit: %s\n" __CONSTANTS_RW_COLOR_END__,commit->id);
+        show_message("  %s",commit->message);
 
         char* parent_commit_id = commit_get_parent_commit_id(archive,commit->id);
 
         if (parent_commit_id == NULL) break;
 
         commit = commit_get_commit(archive,parent_commit_id);
+
+        if (commit != NULL){
+            show_message("");
+        }
     }
 
     return;
