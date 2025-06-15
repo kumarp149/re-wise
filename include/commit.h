@@ -52,4 +52,6 @@ bool commit_is_valid(struct zip* archive,char* commit_id);
 
 char* commit_resolve_commit(struct zip* archive,char *identifier,char** message);
 
+char* commit_get_parent_commit_id(struct zip* archive,char *commit_id);
+
 #endif

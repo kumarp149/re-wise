@@ -24,8 +24,6 @@ void commit_append_tree(char* blob_content,struct jvc_commit* commit,size_t* sz)
     memcpy(blob_content + *sz,"\n",1);
 
     *sz += 1;
-
-    return;
 }
 
 void commit_append_parent(char* blob_content,struct jvc_commit* commit,size_t* sz){
@@ -40,8 +38,6 @@ void commit_append_parent(char* blob_content,struct jvc_commit* commit,size_t* s
 
     memcpy(blob_content + *sz,"\n",1);
     *sz += 1;
-
-    return;
 }
 
 void commit_append_message(char* blob_content,struct jvc_commit* commit,size_t* sz){
@@ -55,8 +51,6 @@ void commit_append_message(char* blob_content,struct jvc_commit* commit,size_t* 
 
     memcpy(blob_content + *sz,"\n",1);
     *sz += 1;
-
-    return;
 }
 
 void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
@@ -88,7 +82,7 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_COMMIT_IDENTIFIER__,strlen(__CONSTANTS_RW_COMMIT_IDENTIFIER__));
 
-    //__RW_MEMFREE__(blob_type_path);
+    __RW_MEMFREE__(blob_type_path);
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -115,6 +109,8 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
     struct zip_file* file = zip_fopen(archive,commit_blob_path,0);
 
     struct jvc_commit* commit = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
+
+    commit->id = strdup(id);
 
     char ch;
     bool space_found = false;
@@ -168,25 +164,6 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 
     return commit;
 }
-
-// void commit_free(struct jvc_commit** commit){
-//     if (commit && *commit){
-//         if ((*commit)->id){
-//             //free((*commit)->id);
-//             (*commit)->id = NULL;
-//         }
-//         if ((*commit)->parent) commit_free((*commit)->parent);
-//         if ((*commit)->message){
-//             //free((*commit)->message);
-//             (*commit)->message = NULL;
-//         }
-//         if ((*commit)->tree){
-//             tree_free(&((*commit)->tree));
-//             (*commit)->tree = NULL;
-//         }
-//         *commit = NULL;
-//     }
-// }
 
 void create_new_commit(struct zip* archive,char ***option_values,int command_flags){
     char* head_commit_id = commit_get_head_commit(archive);
@@ -434,5 +411,11 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     char* commit_id = blob_get_commitid(commit_blob_path);
 
     return commit_id;
+}
 
+char* commit_get_parent_commit_id(struct zip* archive,char *commit_id){
+    struct jvc_commit* commit = commit_get_commit(archive,commit_id);
+
+    if (commit->parent) return commit->parent->id;
+    return NULL;
 }
