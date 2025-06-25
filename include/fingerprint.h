@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "args.h"
 #include "commit.h"
+#include "tag.h"
 
 #define __FINGERPRINT_HELP__ __CONSTANTS_RW_PGMNAME__ " fingerprint <archive> <arg> <val>"
 

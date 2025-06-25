@@ -83,5 +83,5 @@ bin/tag.o: src/tag.c include/tag.h include/args.h include/print.h include/consta
 bin/log.o: src/log.c include/log.h include/commit.h include/args.h include/print.h include/constants.h include/utils.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/fingerprint.o: src/fingerprint.c include/fingerprint.h include/args.h include/constants.h include/commit.h
+bin/fingerprint.o: src/fingerprint.c include/fingerprint.h include/args.h include/constants.h include/commit.h include/tag.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@

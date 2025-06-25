@@ -22,3 +22,5 @@
   X(true,"--name","-n","name","name of the tag",1) 
 
 void process_tag(int argc,char** argv);
+
+char* tag_resolve_tag(struct zip* archive,char *identifier,char** message);

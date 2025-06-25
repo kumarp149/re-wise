@@ -96,3 +96,41 @@ void process_tag(int argc,char** argv){
 
     //__RW_MEMFREE__(commit_id);
 }
+
+char* tag_resolve_tag(struct zip* archive,char *identifier,char** message){
+    if (strlen(identifier) < 3){
+        *message = "too less characters given to identify the commit";
+        return NULL;
+    }
+
+    size_t sz = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_TAGS__) + strlen(identifier) + 1;
+
+    size_t index = 0;
+
+    char* identifier_prefix = (char *) malloc(sizeof(char) * sz);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
+
+    index += strlen(__CONSTANTS_RW_BASE__);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_TAGS__,strlen(__CONSTANTS_RW_TAGS__));
+
+    index += strlen(__CONSTANTS_RW_TAGS__);
+
+    memcpy(identifier_prefix + index,identifier,strlen(identifier));
+
+    index += strlen(identifier);
+
+    identifier_prefix[index] = '\0';
+    
+    zip_file_t* file = zip_fopen(archive,identifier_prefix,0);
+
+    if (file){
+        zip_fclose(file);
+
+        return read_from_file_inzip_ng(archive,identifier_prefix);
+    }
+
+    *message = "no commit found with the given identifier";
+    return NULL;
+}

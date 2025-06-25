@@ -29,8 +29,12 @@ void fingerprint(struct zip* archive,char* commit_identifier,char* path){
         char* commit_id = commit_resolve_commit(archive,commit_identifier,&commit_resolve_message);
 
         if (commit_id == NULL){
-            show_message(commit_resolve_message);
-            return;
+            commit_id = tag_resolve_tag(archive,commit_identifier,&commit_resolve_message);
+
+            if (commit_id == NULL){
+                show_message(commit_resolve_message);
+                return;
+            }
         }
 
         if (!commit_is_valid(archive,commit_id)){
