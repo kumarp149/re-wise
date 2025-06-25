@@ -11,6 +11,7 @@
 #include "../include/commit.h"
 #include "../include/tag.h"
 #include "../include/log.h"
+#include "../include/fingerprint.h"
 
 #define BUFFER_SIZE 8192
 
@@ -35,6 +36,8 @@ int main(int argc,char** argv) {
         process_tag(argc,argv);
     } else if (strcmp(argv[1],"log") == 0){
         process_log(argc,argv);
+    } else if (strcmp(argv[1],"fingerprint") == 0){
+        process_fingerprint(argc,argv);
     } else{
         printf("%d\n",regex_is_matching("abc/pqr","abc/pqr")); //1
         printf("%d\n",regex_is_matching("a*","ab")); //1
