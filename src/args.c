@@ -27,6 +27,19 @@ bool is_probable_option(char* arg){
     return false;
 }
 
+void free_arg_errors(char** arg_errors,size_t arg_error_index){
+    for (size_t i=0;i<arg_error_index;++i){
+        if (arg_errors[arg_error_index]){
+            free(arg_errors[arg_error_index]);
+            arg_errors[arg_error_index] = NULL;
+        }
+    }
+
+    free(arg_errors);
+
+    arg_errors = NULL;
+}
+
 void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit){
     *proceed_further = 0;
     if (argc == 2){
@@ -108,12 +121,14 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
     }
     if (((*flag) & (1 << help_bit)) != 0){
         __ARGS_SHOW_USAGE_;
-        return;
+        goto __RET;
     } else if (arg_error_index > 0){
         show_message(arg_errors[0]);
         __ARGS_SHOW_USAGE_;
-        return;
+        goto __RET;
     }
     *proceed_further = 1;
+__RET:
+    free_arg_errors(arg_errors,arg_error_index);
     return;
 }
