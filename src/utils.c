@@ -328,6 +328,8 @@ hash_map* iterate_zip(struct zip* archive){
             hash_map_insert(map_current_state,name,file_hash);
             
             zip_fclose(file);
+
+            __RW_MEMFREE__(file_hash);
         }
     }
 

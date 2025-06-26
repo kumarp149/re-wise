@@ -151,6 +151,15 @@ void process_status(int argc,char** argv){
     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
     
     if (does_changes_exist) show_message("commit the changes to track them");
+
+    __RW_MEMFREE__(head_commit);
+
+    free_hash_map(map_only_first);
+    free_hash_map(map_only_second);
+    free_hash_map(map_both);
+    free_hash_map(hash_map_current_state);
+
+    commit_free_commit(&head_commit_obj);
 }
 
 // enum path_status status_get_path_status(struct zip* archive,char* path){

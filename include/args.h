@@ -7,6 +7,7 @@
 #include "string.h"
 #include "print.h"
 #include "errors.h"
+#include "global.h"
 
 /*
 convention for arguments:

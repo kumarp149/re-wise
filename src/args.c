@@ -30,12 +30,12 @@ bool is_probable_option(char* arg){
 void free_arg_errors(char** arg_errors,size_t arg_error_index){
     for (size_t i=0;i<arg_error_index;++i){
         if (arg_errors[arg_error_index]){
-            free(arg_errors[arg_error_index]);
+            __RW_MEMFREE__(arg_errors[arg_error_index]);
             arg_errors[arg_error_index] = NULL;
         }
     }
 
-    free(arg_errors);
+    __RW_MEMFREE__(arg_errors);
 
     arg_errors = NULL;
 }

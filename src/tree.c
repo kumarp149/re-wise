@@ -24,7 +24,7 @@ void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     struct jvc_tree* tree = (struct jvc_tree *)malloc(sizeof(struct jvc_tree));
-    tree->id = id;
+    tree->id = strdup(id);
 
     char* tree_blob_path = blob_get_path(id);
     size_t buffer_size = 1024;
@@ -58,6 +58,9 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     hash_map* map = deserialize_hash_map_from_binary(content,content_size);
 
     tree->map = map;
+
+    __RW_MEMFREE__(tree_blob_path);
+    __RW_MEMFREE__(content);
 
     return tree;
 }

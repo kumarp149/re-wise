@@ -23,10 +23,10 @@ else ifeq ($(BUILD_ENV),ci)
 endif
 
 
-OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations
+OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -O1 -fno-omit-frame-pointer
 
-a.out: $(BIN_DIR) $(objects)
-	$(CC) -g $(objects) $(LIB) -o a.out
+a.out: $(BIN_DIR) $(objects) makefile
+	$(CC) -g $(OPTIONS) $(objects) $(LIB) -o a.out
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)

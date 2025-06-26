@@ -159,6 +159,7 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 
     __RW_MEMFREE__(line);
     __RW_MEMFREE__(prefix);
+    __RW_MEMFREE__(commit_blob_path);
 
     zip_fclose(file);
 
@@ -422,4 +423,19 @@ char* commit_get_parent_commit_id(struct zip* archive,char *commit_id){
 
     if (commit->parent) return commit->parent->id;
     return NULL;
+}
+
+void commit_free_commit(struct jvc_commit** commit){
+    if (*commit){
+        __RW_MEMFREE__((*commit)->id);
+        __RW_MEMFREE__((*commit)->message);
+
+        commit_free_commit(&(*commit)->parent);
+
+        tree_free(&((*commit)->tree));
+    }
+
+    __RW_MEMFREE__(*commit);
+
+    commit = NULL;
 }

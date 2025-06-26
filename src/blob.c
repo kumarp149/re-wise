@@ -2,7 +2,7 @@
 
 /*free the memory of the returned pointer after use*/
 char* blob_get_path(const char* blob_id){
-    size_t blob_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(blob_id) + 1;
+    size_t blob_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(blob_id) + 2;
 
     size_t sz = 0;
 

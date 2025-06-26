@@ -84,7 +84,7 @@ void free_hash_map(hash_map* map){
             temp = NULL;
         }
     }
-    free(map);
+    __RW_MEMFREE__(map);
 }
 
 // char *serialize_hash_map_to_binary(hash_map *map, size_t *binary_size) {
