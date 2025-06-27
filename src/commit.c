@@ -299,7 +299,7 @@ void process_commit(int argc,char** argv){
 
     int proceed_further;
 
-    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_commit_usage,&proceed_further,__COMMIT_FLAGBIT_HELP_);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_commit_usage,&proceed_further,__COMMIT_FLAGBIT_HELP_,NULL,0);
 
     if (proceed_further != 1) return;
 

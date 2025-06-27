@@ -40,7 +40,7 @@ void free_arg_errors(char** arg_errors,size_t arg_error_index){
     arg_errors = NULL;
 }
 
-void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit){
+void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit,char* integer_args,size_t integer_args_size){
     *proceed_further = 0;
     if (argc == 2){
         __ARGS_SHOW_USAGE_;
@@ -116,6 +116,14 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
         if ((valargs+i)->mandatory == true && *(option_counts + (c[0] - 'a')) == 0){
             arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
             sprintf(arg_errors[arg_error_index], "error: the argument <%s> is mandatory",(valargs+i)->short_description);
+            arg_error_index++;
+        }
+    }
+    for (size_t i=0;i<integer_args_size;++i){
+        char* c = integer_args + i;
+        if (*(option_counts + (c[0] - 'a')) > 0 && !(is_valid_integer(option_values[c[0]-'a'][0]))){
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
+            sprintf(arg_errors[arg_error_index], "error: the argument <%s> expects a numeric value",(valargs+i)->short_description);
             arg_error_index++;
         }
     }

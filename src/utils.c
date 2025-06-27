@@ -384,3 +384,11 @@ char* read_from_file_inzip_ng(zip_t* archive, const char* file_path) {
     zip_fclose(file);
     return buffer;
 }
+
+bool is_valid_integer(char* c){
+    char *endptr;
+    strtol(c, &endptr, 10);
+    if (*endptr == '\0') return true;
+
+    return false;
+}

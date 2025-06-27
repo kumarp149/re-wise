@@ -186,7 +186,7 @@ void process_track(int argc,char** argv){
 
     int proceed_further;
 
-    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_track_usage,&proceed_further,__TRACK_FLAGBIT_HELP__);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_track_usage,&proceed_further,__TRACK_FLAGBIT_HELP__,NULL,0);
 
     if (proceed_further != 1) return;
 

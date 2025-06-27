@@ -12,6 +12,11 @@
 #define __LOG_FLAGS__ \
 X("--help","-h" , "help", "display this usage", (__LOG_FLAGBIT_HELP_)) \
 
+#define __LOGS__ARGS__ \
+X(false,"--count","-c","count","max number of commits to display",1) \
+
+#define __LOGS__INTEGERARGS__ {'c'};
+
 void process_log(int argc,char** argv);
 
 
