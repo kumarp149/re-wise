@@ -45,6 +45,9 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
     if (argc == 2){
         __ARGS_SHOW_USAGE_;
         return;
+    } else if (argc >= 3 && (strcmp(argv[2],"--help") == 0 || strcmp(argv[2],"-h") == 0)){
+        __ARGS_SHOW_USAGE_;
+        return;
     }
 
     char** arg_errors = (char **)malloc(sizeof(char *)*10);
@@ -54,6 +57,11 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
     int archive_open_error = 0;
 
     *archive = zip_open(argv[2],ZIP_CHECKCONS,&archive_open_error);
+
+    if (archive_open_error != 0){
+        show_message("error opening the archive. please check that it is valid and you have enough permissions to access it");
+        goto __RET;
+    }
 
     *flag = 0;
 
