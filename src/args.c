@@ -89,24 +89,44 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
             i = start;
 
             if (countArgs > cur_valarg->maxCount){
-                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
-                sprintf(arg_errors[arg_error_index], "error: more than necessary arguments provided for the option <%s>",cur_valarg->short_description);
+                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MORE_PROVIDED__,cur_valarg->short_description);
+
+                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MORE_PROVIDED__, cur_valarg->short_description);
+
                 arg_error_index++;
             } else if (cur_valarg->mandatory == true && countArgs <= 0){
                 if (cur_valarg->maxCount == 1){
-                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
-                    sprintf(arg_errors[arg_error_index], "error: option <%s> expects an argument",cur_valarg->short_description);
+                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                    snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+
                     arg_error_index++;
                 } else{
-                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
-                    sprintf(arg_errors[arg_error_index], "error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
+
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                    snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
+
                     arg_error_index++;
                 }
-            }
+            } else if (countArgs == 0){
+                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
 
+                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+                arg_error_index++;
+            }
         } else{
-            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*100);
-            sprintf(arg_errors[arg_error_index], "error: unknown argument <%s> provided", arg);
+            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
+
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
             arg_error_index++;
         }
     }
