@@ -21,6 +21,8 @@ convention for arguments:
 #define __ARGS_ERROR_ARG_ATLEAST_ONE__ "error: option <%s> expects atleast one argument"
 #define __ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__ "error: option <%s> expects an argument"
 #define __ARGS_ERROR_ARG_UNKNOWNARG__ "error: unknown argument <%s> provided"
+#define __ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__ "error: the argument <%s> is mandatory"
+#define __ARGS_ERROR_ARG_NUMERIC_ARG__ "error: the argument <%s> expects a positive integer value"
 
 
 struct args_flag{

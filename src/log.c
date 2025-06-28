@@ -71,6 +71,10 @@ void process_log(int argc,char** argv) {
 
     if (options_sizes['c'-'a'] > 0){
         max_commits_to_log = atoi(options_array['c'-'a'][0]);
+
+        if (max_commits_to_log == 0){
+            return;
+        }
     }    
 
     log_commits(archive,max_commits_to_log);
