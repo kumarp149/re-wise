@@ -252,22 +252,26 @@ void write_to_file_inzip(const char* zip_filename, const char* file_path, const 
 }
 
 
-void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz){
-    struct zip_source* source = zip_source_buffer(archive, content, sz, 0);
+void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz)
+{
+    zip_source_t *src = zip_source_buffer(archive, content, sz, 0);
+    if (!src) { log_message("source err\n"); return; }
 
-    if (!source){
-        log_message("unable to create zip source\n");
+    zip_int64_t idx = zip_name_locate(archive, file_path, 0);
+
+    if (idx >= 0) {
+        if (zip_file_replace(archive, (zip_uint64_t) idx, src, ZIP_FL_OVERWRITE) < 0) {
+            zip_source_free(src);
+            log_message("replace err\n");
+        }
+    } else {
+        if (zip_file_add(archive, file_path, src, ZIP_FL_OVERWRITE | ZIP_FL_RECOMPRESS) < 0) {
+            zip_source_free(src);
+            log_message("add err\n");
+        }
     }
-
-    if (zip_file_add(archive,file_path,source,ZIP_FL_OVERWRITE) < 0){
-        log_message("error adding file: %s\n",file_path);
-        return;
-    } else{
-        log_message("File added to zip successfully: %s\n",file_path);
-    }
-
-    zip_source_close(source);
 }
+
 
 bool file_exists_inzip_ng(struct zip* archive,const char* file_path){
     zip_int64_t file_index = zip_name_locate(archive, file_path, 0);

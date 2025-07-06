@@ -10,10 +10,10 @@ BIN_DIR := bin
 
 ifeq ($(BUILD_ENV),local)
 
-    LIB = -L/opt/homebrew/Cellar/openssl@3/3.5.0/lib/ -L/opt/homebrew/Cellar/libzip/1.11.3/lib/ -lzip \
+    LIB = -L/opt/homebrew/Cellar/openssl@3/3.5.0/lib/ -L/opt/homebrew/Cellar/libzip/1.11.4/lib/ -lzip \
 	  -lssl -lcrypto
     
-	INC = -I/opt/homebrew/Cellar/openssl@3/3.5.0/include/ -I/opt/homebrew/Cellar/libzip/1.11.3/include/
+	INC = -I/opt/homebrew/Cellar/openssl@3/3.5.0/include/ -I/opt/homebrew/Cellar/libzip/1.11.4/include/
 
 else ifeq ($(BUILD_ENV),ci)
     LIB = -Ldeps/openssl/lib/ -Ldeps/libzip/lib/ -lzip \
