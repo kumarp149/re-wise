@@ -1,0 +1,22 @@
+name: Build on Feature Branches
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+jobs:
+  build:
+    if: startsWith(github.event.head_commit.message, 'Build:')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run make
+        run: make BUILD_ENV=ci

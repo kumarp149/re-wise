@@ -7,7 +7,9 @@
 #include "args.h"
 #include "sha256.h"
 #include "timer.h"
+#include "global.h"
 #include "errors.h"
+#include "constants.h"
 
 #define __COMMIT_TREE_PREFIX__ "tree: "
 #define __COMMIT_PARENT_PREFIX__ "parent: "
@@ -42,8 +44,14 @@ char* commit_get_head_commit(struct zip* archive);
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id);
 
-// void commit_free(struct jvc_commit** commit);
+void commit_free_commit(struct jvc_commit** commit);
 
 void process_commit(int argc,char** argv);
+
+bool commit_is_valid(struct zip* archive,char* commit_id);
+
+char* commit_resolve_commit(struct zip* archive,char *identifier,char** message);
+
+char* commit_get_parent_commit_id(struct zip* archive,char *commit_id);
 
 #endif

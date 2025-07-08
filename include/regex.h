@@ -5,6 +5,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "global.h"
 
 
 /*
@@ -15,6 +16,9 @@
  * !pattern	Negates a pattern
  * 
 */
+
+#define __REGEX_ANS_(x) ans = x; goto __setans;
+
 bool regex_is_matching(char* pattern,char* word);
 
 bool regex_is_anypattern_matching(char **patterns,size_t pattern_count,char* word);

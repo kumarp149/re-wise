@@ -13,12 +13,10 @@ void show_status_usage(struct args_flag* flags,size_t flags_size,struct args_val
 }
 
 void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
-    log_message("showing all diff");
     bool no_changes = true;
     bool no_changes_in_matching_paths = true;
     if (hash_map_isempty(only_index) == false){
         no_changes = false;
-        log_message("only index is not empty");
         bool flag = false;
         for (int i=0;i<JVC_HASHMAP_SIZE;++i){
             hash_node* node = only_index->buckets[i];
@@ -61,6 +59,7 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
             bool flag = false;
             while(node){
                 if (strcmp(hash_map_get(index,node->key),hash_map_get(current,node->key)) != 0){
+                    no_changes = false;
                     if (options_size == 0 || regex_is_anypattern_matching(options_array,options_size,node->key)){
                         if (flag == false){
                             flag = true;
@@ -75,12 +74,11 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
         }
     }
 
-    log_message("no_changes: %d\n",no_changes);
 
-    if (no_changes == true){
-        show_message("the archive is clean, no changes to commit");
-    } else if (no_changes_in_matching_paths == true){
-        show_message("no changes in the pathspecs given");
+    if (no_changes == true) show_message("the archive is clean, no changes to commit");
+    else if (no_changes_in_matching_paths == true) show_message("no changes in the pathspecs given");
+    else if (no_changes_in_matching_paths == false){
+        show_message("\ncommit the changes to track them");
     }
 }
 
@@ -122,11 +120,6 @@ void process_status(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    }
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
@@ -134,29 +127,13 @@ void process_status(int argc,char** argv){
 
     int command_flags = 0;
 
-    int args_error_status = 0;
+    int proceed_further;
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_status_usage,&proceed_further,__STATUS_FLAGBIT_HELP__,NULL,0);
 
-    ErrorCode errorCode = ERR_NOERROR;
-
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
-
-    if (((command_flags) & (1<<__STATUS_FLAGBIT_HELP__)) != 0){
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s\n",error_message);
-        show_status_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (errorCode != ERR_NOERROR){
-        show_message(error_get_message(errorCode));
-        return;
-    }
+    if (proceed_further != 1) return;
 
     char* head_commit = commit_get_head_commit(archive);
-
-    log_message("head commit is %s",head_commit);
 
     struct jvc_commit* head_commit_obj = commit_get_commit(archive,head_commit);
 
@@ -169,14 +146,20 @@ void process_status(int argc,char** argv){
 
     bool does_changes_exist = false;
 
-
-    log_message("options size: %d\n",*(options_sizes + ('p'-'a')));
-
     map_get_difference(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both);
 
     show_all_diff(head_commit_obj->tree->map,hash_map_current_state,map_only_first,map_only_second,map_both,options_array['p'-'a'],(size_t) options_sizes['p'-'a']);
     
-    if (does_changes_exist) show_message("commit the changes to track them\n");
+    if (does_changes_exist) show_message("commit the changes to track them");
+
+    __RW_MEMFREE__(head_commit);
+
+    free_hash_map(map_only_first);
+    free_hash_map(map_only_second);
+    free_hash_map(map_both);
+    free_hash_map(hash_map_current_state);
+
+    commit_free_commit(&head_commit_obj);
 }
 
 // enum path_status status_get_path_status(struct zip* archive,char* path){

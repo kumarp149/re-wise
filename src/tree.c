@@ -2,25 +2,34 @@
 
 void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
     char* blob_path = blob_get_path(tree->id);
+
+    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+    blob_type_path[0] = '\0';
+
+    strcat(blob_type_path,blob_path);
+    strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    blob_type_path[sz] = '\0';
+
     size_t blob_size = 0;
     
     char* blob_content = serialize_hash_map_to_binary(tree->map,&blob_size);
     write_to_file_inzip_ng(archive,blob_path,blob_content,blob_size);
 
-    // if (blob_path){
-    //     free(blob_path);
-    //     blob_path = NULL;
-    // }
+    write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_TREE_IDENTIFIER__,strlen(__CONSTANTS_RW_TREE_IDENTIFIER__));
 }
 
 struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
     struct jvc_tree* tree = (struct jvc_tree *)malloc(sizeof(struct jvc_tree));
-    tree->id = id;
+    tree->id = strdup(id);
 
     char* tree_blob_path = blob_get_path(id);
     size_t buffer_size = 1024;
 
-    char* content = (char *)malloc(sizeof(char)*JVC_STRING_BUFFER);
+    char* content = (char *)malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t content_size = 0;
 
@@ -46,15 +55,12 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
 
     *(content + content_size) = '\0';
 
-    log_message("binary content of a map is: %s and it's size is: %d\n",content,content_size);
-
     hash_map* map = deserialize_hash_map_from_binary(content,content_size);
 
     tree->map = map;
 
-    log_message("is tree map empty: %d",hash_map_isempty(tree->map));
-
-    log_message("value from key is: %s",hash_map_get(tree->map,"sample.txt"));
+    __RW_MEMFREE__(tree_blob_path);
+    __RW_MEMFREE__(content);
 
     return tree;
 }

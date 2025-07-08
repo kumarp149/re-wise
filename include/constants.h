@@ -10,7 +10,7 @@
 
 /*JVC_VERSIONS contain all the versions of the jar, named with a unique checksum. Each file will have a name, parent version (i.e. previous version)
 and a pointer to a tree file*/
-#define JVC_VERSIONS "versions/"
+#define __CONSTANTS_RW_TAGS__ "versions/"
 
 /*__CONSTANTS_RW_INDEX__ contains a list of all files and their checksums*/
 #define __CONSTANTS_RW_INDEX__ "index"
@@ -21,11 +21,25 @@ and a pointer to a tree file*/
 /*__CONSTANTS_RW_TREES__ contains the trees, named with a unique checksum. Each file will have the map from file path to object*/
 #define __CONSTANTS_RW_TREES__ "trees/"
 
+#define __CONSTANTS_RW_BLOBTYPE_IDENTIFIER__ ".type"
+
+#define __CONSTANTS_RW_COMMIT_IDENTIFIER__ "COMMIT"
+
+#define __CONSTANTS_RW_TREE_IDENTIFIER__ "TREE"
+
+#define __CONSTANTS_RW_BLOB_IDENTIFIER__ "BLOB"
+
+#define __CONSTANTS_RW_HEAD_IDENTIFIER_ "HEAD"
+
+
 #define JVC_BUFFER 8192
 
 #define __CONSTANTS_HASH_GENERATOR_SIZE__ 20000
 
-#define JVC_STRING_BUFFER 50000
+#define __CONSTANTS_RW_STRING_BUFFER 50000
+
+#define __CONSTANT_RW_STRING_BUFFER_S 20
+#define __CONSTANT_RW_STRING_BUFFER_M 100
 
 #define __CONSTANTS_RW_HASH_GENERATOR_DELIMITER__ "ABC"
 

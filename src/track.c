@@ -22,7 +22,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
 
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
-    for (zip_uint64_t i = num_entries - 1; i >= 0; i--){
+    for (zip_uint64_t i = 0; i < num_entries; i++){
         const char *name = zip_get_name(archive, i, 0);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
@@ -78,7 +78,21 @@ void track(struct zip* archive, int flags,char ***option_values){
         while(node){
             char* path = blob_get_path(node->value);
 
+            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+            blob_type_path[0] = '\0';
+
+            strcat(blob_type_path,path);
+
+            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            blob_type_path[sz] = '\0';
+
             copy_file_inzip_ng(archive,node->key,path);
+
+            write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
 
             node = node->next;
         }
@@ -163,11 +177,6 @@ void process_track(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_track_usage();
-        return;
-    }
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
@@ -175,25 +184,11 @@ void process_track(int argc,char** argv){
 
     int command_flags = 0;
 
-    int args_error_status = 0;
+    int proceed_further;
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_track_usage,&proceed_further,__TRACK_FLAGBIT_HELP__,NULL,0);
 
-    ErrorCode errorCode = ERR_NOERROR;
-
-    processArgs(argc,argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message, &errorCode);
-
-    if (((command_flags) & (1<<__TRACK_FLAGBIT_HELP__)) != 0){
-        show_track_usage();
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s",error_message);
-        show_track_usage();
-        return;
-    } else if (errorCode != ERR_NOERROR){
-        show_message(error_get_message(errorCode),error_message);
-        return;
-    }
+    if (proceed_further != 1) return;
 
     track(archive,command_flags,options_array);
 

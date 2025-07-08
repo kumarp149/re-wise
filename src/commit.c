@@ -24,8 +24,6 @@ void commit_append_tree(char* blob_content,struct jvc_commit* commit,size_t* sz)
     memcpy(blob_content + *sz,"\n",1);
 
     *sz += 1;
-
-    return;
 }
 
 void commit_append_parent(char* blob_content,struct jvc_commit* commit,size_t* sz){
@@ -40,8 +38,6 @@ void commit_append_parent(char* blob_content,struct jvc_commit* commit,size_t* s
 
     memcpy(blob_content + *sz,"\n",1);
     *sz += 1;
-
-    return;
 }
 
 void commit_append_message(char* blob_content,struct jvc_commit* commit,size_t* sz){
@@ -55,15 +51,24 @@ void commit_append_message(char* blob_content,struct jvc_commit* commit,size_t* 
 
     memcpy(blob_content + *sz,"\n",1);
     *sz += 1;
-
-    return;
 }
 
 void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     char* blob_path = blob_get_path(commit->id);
 
-    char* blob_content = (char *)malloc(sizeof(char)*JVC_STRING_BUFFER);
+    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+    blob_type_path[0] = '\0';
+
+    strcat(blob_type_path,blob_path);
+    strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    blob_type_path[sz] = '\0';
+
+    char* blob_content = (char *) malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
     size_t size_filled = 0;
 
@@ -74,6 +79,10 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
     *(blob_content+size_filled) = '\0';
 
     write_to_file_inzip_ng(archive,blob_path,blob_content,size_filled);
+
+    write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_COMMIT_IDENTIFIER__,strlen(__CONSTANTS_RW_COMMIT_IDENTIFIER__));
+
+    __RW_MEMFREE__(blob_type_path);
 }
 
 char* commit_get_head_commit(struct zip* archive){
@@ -85,8 +94,6 @@ char* commit_get_head_commit(struct zip* archive){
 
     *(head_commit_id + 64) = '\0';
 
-    log_message("head_commit: %s\n",head_commit_id);
-
     zip_fclose(head_file);
 
     return head_commit_id;
@@ -94,8 +101,8 @@ char* commit_get_head_commit(struct zip* archive){
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
     char* commit_blob_path = blob_get_path(id);
-    char* line = (char *)malloc(sizeof(char)*1001);
-    char* prefix = (char *)malloc(sizeof(char)*100);
+    char* line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
+    char* prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);
 
     size_t line_size = 0;
     size_t prefix_size = 0;
@@ -103,13 +110,14 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 
     struct jvc_commit* commit = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
 
+    commit->id = strdup(id);
+
     char ch;
     bool space_found = false;
     while (zip_fread(file, &ch, 1) == 1){
         if (ch == '\n'){
             *(line + line_size) = '\0';
             if (strcmp(prefix,__COMMIT_TREE_PREFIX__) == 0){
-                log_message("forming the tree and it's map");
                 commit->tree = tree_get_tree(archive,line);
             } else if (strcmp(prefix,__COMMIT_PARENT_PREFIX__) == 0){
                 if (line_size == 0){
@@ -122,11 +130,11 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
                 commit->message = strdup(line);
             }
 
-            free(line);
-            free(prefix);
+            __RW_MEMFREE__(line);
+            __RW_MEMFREE__(prefix);
 
-            line = (char *)malloc(sizeof(char)*1000);
-            prefix = (char *)malloc(sizeof(char)*100);
+            line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
+            prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);
 
             line_size = 0;
             prefix_size = 0;
@@ -149,38 +157,14 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
         }
     }
 
-    if (line){
-        free(line);
-        line = NULL;
-    }
-    if (prefix){
-        free(prefix);
-        prefix = NULL;
-    }
+    __RW_MEMFREE__(line);
+    __RW_MEMFREE__(prefix);
+    __RW_MEMFREE__(commit_blob_path);
 
     zip_fclose(file);
 
     return commit;
 }
-
-// void commit_free(struct jvc_commit** commit){
-//     if (commit && *commit){
-//         if ((*commit)->id){
-//             //free((*commit)->id);
-//             (*commit)->id = NULL;
-//         }
-//         if ((*commit)->parent) commit_free((*commit)->parent);
-//         if ((*commit)->message){
-//             //free((*commit)->message);
-//             (*commit)->message = NULL;
-//         }
-//         if ((*commit)->tree){
-//             tree_free(&((*commit)->tree));
-//             (*commit)->tree = NULL;
-//         }
-//         *commit = NULL;
-//     }
-// }
 
 void create_new_commit(struct zip* archive,char ***option_values,int command_flags){
     char* head_commit_id = commit_get_head_commit(archive);
@@ -243,7 +227,21 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
         while(node){
             char* path = blob_get_path(node->value);
 
+            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            char* blob_type_path = (char *) malloc(sizeof(char) * sz);
+
+            blob_type_path[0] = '\0';
+
+            strcat(blob_type_path,path);
+
+            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+            blob_type_path[sz] = '\0';
+
             copy_file_inzip_ng(archive,node->key,path);
+
+            write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
 
             node = node->next;
 
@@ -261,10 +259,6 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
     tree_blob->id = sha256_string(tree_generator->data,tree_generator->sz);
     tree_blob->map = path_map;
 
-    struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
-
-    index_content->map = path_map;
-
     struct jvc_commit* commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
 
     struct jvc_commit* parent_commit = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
@@ -275,10 +269,6 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
     commit_blob->parent = parent_commit;
     commit_blob->tree = tree_blob;
     commit_blob->message = option_values['m'-'a'][0];
-
-    log_message("head commit: %s",parent_commit->id);
-
-    log_message("new commit: %s",commit_blob->id);
 
     commit_add_blob(archive,commit_blob);
     tree_add_blob(archive,tree_blob);
@@ -300,53 +290,152 @@ void process_commit(int argc,char** argv){
         #undef X
     };
 
-    if (strcmp(argv[2],"-h") == 0 || strcmp(argv[2],"--help") == 0){
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    }
-
     struct zip* archive;
 
     int command_flags = 0;
 
-    int args_error_status = 0;
-
     char** options_array[__ARGS_OPTION_TYPES__];
     int options_sizes[__ARGS_OPTION_TYPES__] = {0};
 
-    char* error_message = (char *)malloc(sizeof(char)*1000);
+    int proceed_further;
 
-    ErrorCode errCode = ERR_NOERROR;
+    processArgs(argc,argv,flags,sizeof(flags)/sizeof(flags[0]),valargs,sizeof(valargs)/sizeof(valargs[0]),&archive,&command_flags,options_array, options_sizes,show_commit_usage,&proceed_further,__COMMIT_FLAGBIT_HELP_,NULL,0);
 
-    processArgs(argc, argv, flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]), &archive, &command_flags, options_array, options_sizes, &args_error_status, &error_message,&errCode);
-
-    log_message("command_flags is: %d\n",command_flags);
-
-    if (((command_flags) & (1<<__COMMIT_FLAGBIT_HELP_)) != 0){
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (args_error_status != 0){
-        show_message("%s\n",error_message);
-        show_commit_usage(flags, sizeof(flags)/sizeof(flags[0]), valargs, sizeof(valargs)/sizeof(valargs[0]));
-        return;
-    } else if (errCode != ERR_NOERROR){
-        show_message(error_get_message(errCode));
-        return;
-    } 
-
-    log_message("committing the changes in archive");
+    if (proceed_further != 1) return;
 
     create_new_commit(archive,options_array,command_flags);
 
-    log_message("successfully committed the changes");
+    zip_close(archive);
+    
+    return;
+}
 
-    if (zip_close(archive) == -1){
-        log_message("error closing the archive: %s",zip_strerror(archive));
-    } else{
-        log_message("closed the zip successfully");
+bool commit_is_valid(struct zip* archive,char* commit_id){
+    char* blob_path = blob_get_path(commit_id);
+    char* blob_path_type = blob_get_type_path(commit_id);
+
+    if (!file_exists_inzip_ng(archive,blob_path) || !(file_exists_inzip_ng(archive,blob_path_type))){
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+
+        return false;
     }
 
-    log_message("closed the zip");
+    char* blob_type = read_from_file_inzip_ng(archive,(const char*) blob_path_type);
 
-    return;
+    if (strcmp(blob_type,__CONSTANTS_RW_COMMIT_IDENTIFIER__) == 0){
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+        __RW_MEMFREE__(blob_type);
+
+        return true;
+    } else{
+        __RW_MEMFREE__(blob_path);
+        __RW_MEMFREE__(blob_path_type);
+        __RW_MEMFREE__(blob_type);
+
+        return false;
+    }
+}
+
+char* commit_resolve_commit(struct zip* archive,char *identifier,char** message){
+    if (strcmp(identifier,__CONSTANTS_RW_HEAD_IDENTIFIER_) == 0) return commit_get_head_commit(archive);
+
+    if (strlen(identifier) < 3){
+        *message = "too less characters given to identify the commit";
+        return NULL;
+    }
+
+    size_t sz = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(identifier) + 1;
+
+    size_t index = 0;
+
+    char* identifier_prefix = (char *)malloc(sizeof(char) * sz);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
+
+    index += strlen(__CONSTANTS_RW_BASE__);
+
+    memcpy(identifier_prefix + index,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
+
+    index += strlen(__CONSTANTS_RW_BLOBS__);
+
+    memcpy(identifier_prefix + index,identifier,2);
+
+    index += 2;
+
+    identifier_prefix[index] = '/';
+
+    index++;
+
+    memcpy(identifier_prefix + index,identifier+2,strlen(identifier)-2);
+
+    index += strlen(identifier)-2;
+
+    identifier_prefix[index] = '\0';
+
+    int count = 0;
+    
+    zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
+
+    size_t prefix_len = strlen(identifier_prefix);
+    
+    char* commit_blob_path;
+
+    for (zip_uint64_t i = 0; i < num_entries; ++i){
+        const char* name = zip_get_name(archive, i, ZIP_FL_ENC_GUESS);
+        if (!name || strstr(name,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) != NULL) {
+            continue;
+        }
+
+        if (strncmp(name, __CONSTANTS_RW_BASE__ __CONSTANTS_RW_BLOBS__, strlen(__CONSTANTS_RW_BASE__ __CONSTANTS_RW_BLOBS__)) != 0){
+            continue;
+        }
+
+        char* object_id = blob_get_commitid((char *)name);
+
+        if (strncmp((const char *)name, identifier_prefix, prefix_len) == 0 && commit_is_valid(archive,object_id) == true){
+            count++;
+            commit_blob_path = strdup(name);
+        }
+
+        if (count > 1) break;
+    }
+
+    __RW_MEMFREE__(identifier_prefix);
+
+    if (count == 0){
+        *message = "no commit found with the given prefix";
+        return NULL;
+    }
+    if (count > 1){
+        *message = "too many commits found with the given prefix";
+        return NULL;
+    }
+
+    char* commit_id = blob_get_commitid(commit_blob_path);
+
+    return commit_id;
+}
+
+char* commit_get_parent_commit_id(struct zip* archive,char *commit_id){
+    struct jvc_commit* commit = commit_get_commit(archive,commit_id);
+
+    if (commit->parent) return commit->parent->id;
+    return NULL;
+}
+
+void commit_free_commit(struct jvc_commit** commit){
+    if (*commit){
+        __RW_MEMFREE__((*commit)->id);
+        __RW_MEMFREE__((*commit)->message);
+
+        commit_free_commit(&(*commit)->parent);
+
+        tree_free(&((*commit)->tree));
+    }
+
+    __RW_MEMFREE__(*commit);
+
+    commit = NULL;
 }

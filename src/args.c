@@ -1,7 +1,6 @@
 #include "../include/args.h"
 
 int get_arg_type(char* arg,struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size,struct args_flag** cur_flag,struct args_valarg** cur_valarg){
-    log_message("calling get_arg_type for arg: %s\n",arg);
     for (size_t i=0;i<flags_size;++i){
         if (strcmp(arg,(flags+i)->longId) == 0 || strcmp(arg,(flags+i)->shortId) == 0){
             *cur_flag = (flags+i);
@@ -28,12 +27,41 @@ bool is_probable_option(char* arg){
     return false;
 }
 
-void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts, int* err, char** error_message, ErrorCode* errorCode){
+void free_arg_errors(char** arg_errors,size_t arg_error_index){
+    for (size_t i=0;i<arg_error_index;++i){
+        if (arg_errors[arg_error_index]){
+            __RW_MEMFREE__(arg_errors[arg_error_index]);
+            arg_errors[arg_error_index] = NULL;
+        }
+    }
+
+    __RW_MEMFREE__(arg_errors);
+
+    arg_errors = NULL;
+}
+
+void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit,char* integer_args,size_t integer_args_size){
+    *proceed_further = 0;
+    if (argc == 2){
+        __ARGS_SHOW_USAGE_;
+        return;
+    } else if (argc >= 3 && (strcmp(argv[2],"--help") == 0 || strcmp(argv[2],"-h") == 0)){
+        __ARGS_SHOW_USAGE_;
+        return;
+    }
+
+    char** arg_errors = (char **)malloc(sizeof(char *)*10);
+
+    size_t arg_error_index = 0;
+
     int archive_open_error = 0;
 
     *archive = zip_open(argv[2],ZIP_CHECKCONS,&archive_open_error);
 
-    log_message("archive open status from processArgs: %d\n",archive_open_error);
+    if (archive_open_error != 0){
+        show_message("error opening the archive. please check that it is valid and you have enough permissions to access it");
+        goto __RET;
+    }
 
     *flag = 0;
 
@@ -45,11 +73,8 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
         int arg_type = get_arg_type(arg,flags,flags_size,valargs,valargs_size,&cur_flag,&cur_valarg);
 
-        if (arg_type == 1){
-            //(*flag) = (*flag) | (1 << (cur_flag->flagId));
-            (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
-            log_message("flag present: %s",arg);
-        } else if (arg_type == 2){
+        if (arg_type == 1) (*flag) = (*flag) ^ (1 << (cur_flag->flagId));
+        else if (arg_type == 2){
             int index = *((cur_valarg->shortId) + 1)-'a';
             int start = i+1;
             int countArgs = 0;
@@ -71,55 +96,79 @@ void processArgs(int argc, char** argv, struct args_flag* flags, size_t flags_si
 
             i = start;
 
-            log_message("countArgs: %d",countArgs);
-
             if (countArgs > cur_valarg->maxCount){
-                *err = 1;
-                sprintf(*error_message,"error: more than necessary arguments provided for the option <%s>",cur_valarg->short_description);
-                return;
+                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MORE_PROVIDED__,cur_valarg->short_description);
+
+                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MORE_PROVIDED__, cur_valarg->short_description);
+
+                arg_error_index++;
             } else if (cur_valarg->mandatory == true && countArgs <= 0){
-                *err = 1;
                 if (cur_valarg->maxCount == 1){
-                    sprintf(*error_message,"error: option <%s> expects an argument",cur_valarg->short_description);
+                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                    snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+
+                    arg_error_index++;
                 } else{
-                    sprintf(*error_message,"error: option <%s> expects atleast one argument",cur_valarg->short_description);
+                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
+
+                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                    snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
+
+                    arg_error_index++;
                 }
-                
-                return;
+            } else if (countArgs == 0){
+                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+
+                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+
+                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
+                arg_error_index++;
             }
         } else{
-            *err = 1;
-            sprintf(*error_message, "error: unknown argument <%s> provided", arg);
-            return;
-        }
+            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
 
-        cur_flag = NULL;
-        cur_valarg = NULL;
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
+            arg_error_index++;
+        }
     }
 
     for (size_t i=0;i<valargs_size;++i){
         char *c = ((valargs+i)->shortId) + 1;
-        log_message("valargs character: %s, count: %d",c,*(option_counts + (c[0] - 'a')));
         if ((valargs+i)->mandatory == true && *(option_counts + (c[0] - 'a')) == 0){
-            log_message("valargs character: %s is mandatory but not given",c);
-            *err = 1;
-            sprintf(*error_message,"error: the argument <%s> is mandatory",(valargs+i)->short_description);
-            return;
+            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
+
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
+            arg_error_index++;
         }
     }
+    for (size_t i=0;i<integer_args_size;++i){
+        char* c = integer_args + i;
+        if (*(option_counts + (c[0] - 'a')) > 0 && (!(is_valid_integer(option_values[c[0]-'a'][0])) || (atoi(option_values[c[0]-'a'][0])) < 0)){
+            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
 
-    if (archive_open_error != 0){
-
-        log_message("error opening the archive");
-
-        if (archive_open_error == ZIP_ER_NOENT){
-            *errorCode = ERR_ZIP_NOFILE;
-            *error_message = argv[2];
-        } else if (archive_open_error == ZIP_ER_NOZIP){
-            *errorCode = ERR_ZIP_NOT_VALID;
-            *error_message = argv[2];
-        } else if (archive_open_error == ZIP_ER_OPEN){
-            *errorCode = ERR_UNKNOWN;
+            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
+            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
+            arg_error_index++;
         }
     }
+    if (((*flag) & (1 << help_bit)) != 0){
+        __ARGS_SHOW_USAGE_;
+        goto __RET;
+    } else if (arg_error_index > 0){
+        show_message(arg_errors[0]);
+        __ARGS_SHOW_USAGE_;
+        goto __RET;
+    }
+    *proceed_further = 1;
+__RET:
+    free_arg_errors(arg_errors,arg_error_index);
+    return;
 }

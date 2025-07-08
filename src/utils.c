@@ -92,7 +92,7 @@ void copy_file_inzip_ng(zip_t* archive,const char* file_from,const char* file_to
         zip_fclose(source_file);
     }
 
-    char* buffer = malloc(stat.size);
+    char* buffer = (char *)malloc(stat.size);
 
     if (zip_fread(source_file, buffer, stat.size) != (zip_int64_t) stat.size) {
         fprintf(stderr, "Failed to read source file content\n");
@@ -142,7 +142,7 @@ void copy_file_inzip(const char* zip_filename, const char* file_from, const char
         zip_close(archive);
     }
 
-    char* buffer = malloc(stat.size);
+    char* buffer = (char *)malloc(stat.size);
     if (!buffer) {
         fprintf(stderr, "Failed to allocate memory for file content\n");
         zip_fclose(source_file);
@@ -252,29 +252,26 @@ void write_to_file_inzip(const char* zip_filename, const char* file_path, const 
 }
 
 
-void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz){
-    //printf("calling write_to_file_inzip_ng\n");
-    struct zip_source* source = zip_source_buffer(archive, content, sz, 0);
+void write_to_file_inzip_ng(struct zip* archive,char* file_path,char* content,size_t sz)
+{
+    zip_source_t *src = zip_source_buffer(archive, content, sz, 0);
+    if (!src) { log_message("source err\n"); return; }
 
-    // printf("adding file: %s\n",file_path);
+    zip_int64_t idx = zip_name_locate(archive, file_path, 0);
 
-    // printf("source created\n");
-
-    if (!source){
-        log_message("unable to create zip source\n");
+    if (idx >= 0) {
+        if (zip_file_replace(archive, (zip_uint64_t) idx, src, ZIP_FL_OVERWRITE) < 0) {
+            zip_source_free(src);
+            log_message("replace err\n");
+        }
+    } else {
+        if (zip_file_add(archive, file_path, src, ZIP_FL_OVERWRITE | ZIP_FL_RECOMPRESS) < 0) {
+            zip_source_free(src);
+            log_message("add err\n");
+        }
     }
-
-    if (zip_file_add(archive,file_path,source,ZIP_FL_OVERWRITE) < 0){
-        log_message("error adding file: %s\n",file_path);
-        return;
-    } else{
-        log_message("File added to zip successfully: %s\n",file_path);
-    }
-
-    // printf("added content to file: %s\n",file_path);
-
-    zip_source_close(source);
 }
+
 
 bool file_exists_inzip_ng(struct zip* archive,const char* file_path){
     zip_int64_t file_index = zip_name_locate(archive, file_path, 0);
@@ -335,8 +332,67 @@ hash_map* iterate_zip(struct zip* archive){
             hash_map_insert(map_current_state,name,file_hash);
             
             zip_fclose(file);
+
+            __RW_MEMFREE__(file_hash);
         }
     }
 
     return map_current_state;
+}
+
+char* read_from_file_inzip_ng(zip_t* archive, const char* file_path) {
+    if (!archive || !file_path) {
+        fprintf(stderr, "Invalid input: archive or file_path is NULL\n");
+        return NULL;
+    }
+
+    // Locate file in the archive
+    zip_uint64_t index = (zip_uint64_t) zip_name_locate(archive, file_path, ZIP_FL_ENC_GUESS);
+    if (index < 0) {
+        fprintf(stderr, "File not found in ZIP archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Get file metadata (for size)
+    struct zip_stat st;
+    zip_stat_init(&st);
+    if (zip_stat_index(archive, index, ZIP_FL_ENC_GUESS, &st) != 0) {
+        fprintf(stderr, "Failed to stat file in archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Open the file inside the archive
+    zip_file_t* file = zip_fopen_index(archive, index, ZIP_FL_UNCHANGED);
+    if (!file) {
+        fprintf(stderr, "Failed to open file in archive: %s\n", file_path);
+        return NULL;
+    }
+
+    // Allocate memory and read content
+    char* buffer = (char*)malloc(st.size + 1);
+    if (!buffer) {
+        fprintf(stderr, "Memory allocation failed\n");
+        zip_fclose(file);
+        return NULL;
+    }
+
+    zip_int64_t bytes_read = zip_fread(file, buffer, st.size);
+    if (bytes_read < 0) {
+        fprintf(stderr, "Error reading file in archive: %s\n", file_path);
+        free(buffer);
+        zip_fclose(file);
+        return NULL;
+    }
+
+    buffer[bytes_read] = '\0'; // Null-terminate
+    zip_fclose(file);
+    return buffer;
+}
+
+bool is_valid_integer(char* c){
+    char *endptr;
+    strtol(c, &endptr, 10);
+    if (*endptr == '\0') return true;
+
+    return false;
 }
