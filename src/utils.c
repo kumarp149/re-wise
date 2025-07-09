@@ -396,3 +396,10 @@ bool is_valid_integer(char* c){
 
     return false;
 }
+
+bool string_to_num(char* c,long* l){
+    char* endptr;
+    *l = strtol(c,&endptr,10);
+    if (*endptr == '\0') return true;
+    return false;
+}

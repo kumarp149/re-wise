@@ -406,7 +406,7 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
 
     if (count == 0){
         *message = "no commit found with the given prefix";
-        return NULL;
+        goto __NEXT;
     }
     if (count > 1){
         *message = "too many commits found with the given prefix";
@@ -414,8 +414,58 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     }
 
     char* commit_id = blob_get_commitid(commit_blob_path);
-
+    
     return commit_id;
+
+__NEXT:
+    ;
+    size_t tildeIndex = 0;
+    while(tildeIndex < strlen(identifier) && identifier[tildeIndex] != '~'){
+        tildeIndex++;
+    }
+
+    if (tildeIndex == strlen(identifier) || tildeIndex == 0) return NULL;
+
+    char* supposed_parent_commit_identifier = (char *)malloc(sizeof(tildeIndex+1));
+
+    strncpy(supposed_parent_commit_identifier, identifier, tildeIndex);
+
+    supposed_parent_commit_identifier[tildeIndex] = '\0';
+
+    //printf("supposed_parent_commit_identifier: %s\n",supposed_parent_commit_identifier);
+
+    char* supposed_parent_commit_id = commit_resolve_commit(archive,supposed_parent_commit_identifier,message);
+
+    //printf("supposed_parent_commit_id is %s\n",supposed_parent_commit_id);
+
+    if (supposed_parent_commit_id == NULL) return NULL;
+
+    size_t level = 0;
+    size_t mul = 1;
+    for (size_t i=strlen(identifier)-1;i>=tildeIndex+1;--i){
+        //printf("iteration for index: %d\n",(int) i);
+        if ('0' <= identifier[i] && identifier[i] <= '9'){
+            level += mul * ((size_t) (identifier[i]-'0'));
+            
+            mul = mul*10;
+        } else{
+            return NULL;
+        }
+    }
+
+    //printf("level: %d\n",(int) level);
+
+    while(level > 0){
+        supposed_parent_commit_id = commit_get_parent_commit_id(archive,supposed_parent_commit_id);
+
+        //printf("supposed_parent_commit_id is %s\n",supposed_parent_commit_id);
+        if (supposed_parent_commit_id == NULL){
+            return NULL;
+        }
+        level--;
+    }
+
+    return supposed_parent_commit_id;
 }
 
 char* commit_get_parent_commit_id(struct zip* archive,char *commit_id){

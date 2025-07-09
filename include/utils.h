@@ -47,4 +47,6 @@ char* read_from_file_inzip_ng(zip_t* archive, const char* file_path);
 
 bool is_valid_integer(char* c);
 
+bool string_to_num(char* c,long* l);
+
 #endif

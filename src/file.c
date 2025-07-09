@@ -15,6 +15,20 @@
 
 #define BUFFER_SIZE 8192
 
+void show_help(){
+    show_message("usage: rw <command> <zip-path> <arg> <val> ....\n");
+    show_message("Following are the commands supported");
+    show_message("  track: start tracking the archive");
+    show_message("  status: check the paths modified/deleted/created post the latest commit");
+    show_message("  commit: commit the changes to track them");
+    show_message("  restore: restore the paths from a particular commit");
+    show_message("  fingerprint: get the hash of the file from a commit/tag or worktree");
+    show_message("  log: display the commits");
+    show_message("  tag: tag a particular commit with a name\n");
+
+    show_message("use \"rw <command> --help\" to get command specific help");
+}
+
 
 
 int main(int argc,char** argv) {
@@ -38,7 +52,10 @@ int main(int argc,char** argv) {
         process_log(argc,argv);
     } else if (strcmp(argv[1],"fingerprint") == 0){
         process_fingerprint(argc,argv);
-    } else{
+    } else if (strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
+        show_help();
+    }
+    else{
         printf("%d\n",regex_is_matching("abc/pqr","abc/pqr")); //1
         printf("%d\n",regex_is_matching("a*","ab")); //1
         printf("%d\n",regex_is_matching("a?","ab")); //1
