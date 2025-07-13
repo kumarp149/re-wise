@@ -13,7 +13,7 @@ const char* track_option_descriptions[] = {
 };
 
 bool is_already_initialized(struct zip* archive){
-    if (file_exists_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__) && file_exists_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_INDEX__)) return true;
+    if (file_exists_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__)) return true;
     return false;
 }
 
@@ -23,7 +23,7 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
     for (zip_uint64_t i = 0; i < num_entries; i++){
-        const char *name = zip_get_name(archive, i, 0);
+        const char *name = zip_get_name(archive, i,  ZIP_FL_UNCHANGED);
 
         if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
             zip_delete(archive, i);
@@ -53,15 +53,16 @@ void clean_archive(zip_t* archive, hash_map* map,struct sha256_generator* tree_g
             sha256_update_content(commit_generator,time,strlen(time));
 
             free(time);
+            free(file_hash);
         }
     }
 }
 
 
-void track(struct zip* archive, int flags,char ***option_values){
+void track(struct zip* archive, int flags,char ***option_values,struct jvc_tree** tree_blob,struct jvc_commit** commit_blob){
     bool is_archive_being_tracked = is_already_initialized(archive);
     if ((is_archive_being_tracked) && !(flags & (1<<__TRACK_FLAGBIT_FORCE__))){
-        show_message("archive is already being tracked");
+        show_message("the archive is already being tracked");
         return;
     }
 
@@ -95,39 +96,28 @@ void track(struct zip* archive, int flags,char ***option_values){
             write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
 
             node = node->next;
+
+            __RW_MEMFREE__(path);
         }
     }
 
-    struct jvc_tree* tree_blob = (struct jvc_tree *) malloc(sizeof(struct jvc_tree));
+    *tree_blob = (struct jvc_tree *) malloc(sizeof(struct jvc_tree));
 
-    tree_blob->id = strdup(sha256_string(tree_generator->data,tree_generator->sz));
-    tree_blob->map = map_path_hash;
+    (*tree_blob)->id = sha256_string(tree_generator->data,tree_generator->sz);
+    (*tree_blob)->map = map_path_hash;
 
-    // struct jvc_index* index_content = (struct jvc_index *)malloc(sizeof(struct jvc_index));
+    *commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
 
-    // index_content->map = map_path_hash;
+    (*commit_blob)->id = strdup(sha256_string(commit_generator->data,commit_generator->sz));
+    (*commit_blob)->parent = NULL;
+    (*commit_blob)->tree = *tree_blob;
+    (*commit_blob)->message = option_values['m'-'a'][0];
 
-    struct jvc_commit* commit_blob = (struct jvc_commit *)malloc(sizeof(struct jvc_commit));
-
-    commit_blob->id = strdup(sha256_string(commit_generator->data,commit_generator->sz));
-    commit_blob->parent = NULL;
-    commit_blob->tree = tree_blob;
-    commit_blob->message = option_values['m'-'a'][0];
-
-    commit_add_blob(archive,commit_blob);
-    log_message("added the commit blob: %s",commit_blob->id);
-    tree_add_blob(archive,tree_blob);
-    log_message("added the tree blob: %s",tree_blob->id);
-    write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,commit_blob->id,strlen(commit_blob->id));
-
-    //sha256_free(&commit_generator);
-    //sha256_free(&tree_generator);
-    
-
-    // tree_free(&tree_blob);
-    // commit_free(&commit_blob);
-    // free(&commit_generator);
-    // free(&tree_generator);
+    commit_add_blob(archive,*commit_blob);
+    log_message("added the commit blob: %s",(*commit_blob)->id);
+    tree_add_blob(archive,*tree_blob);
+    log_message("added the tree blob: %s",(*tree_blob)->id);
+    write_to_file_inzip_ng(archive,__CONSTANTS_RW_BASE__ __CONSTANTS_RW_HEAD__,(*commit_blob)->id,strlen((*commit_blob)->id));
 }
 
 /*checks if head and index are already present*/
@@ -190,8 +180,16 @@ void process_track(int argc,char** argv){
 
     if (proceed_further != 1) return;
 
-    track(archive,command_flags,options_array);
+    struct jvc_tree* tree;
+    struct jvc_commit* commit;
+
+    track(archive,command_flags,options_array,&tree,&commit);
+
+    show_message("started tracking the archive. %s is the root commit",commit->id);
 
     zip_close(archive);
+
+    commit_free_commit(&commit);
+
     return;
 }

@@ -82,30 +82,6 @@ void show_all_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_m
     }
 }
 
-// void show_particular_diff(hash_map* index,hash_map* current,hash_map* only_index,hash_map* only_current,hash_map* both,char** options_array,size_t options_size){
-//     log_message("inside show_particular_diff");
-//     log_message("size of options: %d",options_size);
-//     for (size_t i=0;i<options_size;++i){
-//         char* opt = options_array[i];
-//         log_message("going for opt: %s",opt);
-//         if (hash_map_get(only_current,opt) != NULL){
-//             show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_GREEN__ "%s: " __CONSTANTS_RW_COLOR_END__ "created",opt);
-//         } else if (hash_map_get(only_index,opt) != NULL){
-//             show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_RED__ "%s: " __CONSTANTS_RW_COLOR_END__ "deleted",opt);
-//         } else if (hash_map_get(both,opt) != NULL){
-//             log_message("hashes: %s, %s",hash_map_get(index,opt),hash_map_get(current,opt));
-//             if (strcmp(hash_map_get(index,opt),hash_map_get(current,opt)) != 0){
-//                 show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "modified",opt);
-//             } else{
-//                 show_message(__CONSTANTS_RW_COLOR_START__ __CONSTANTS_RW_COLOR_YELLOW__ "%s: " __CONSTANTS_RW_COLOR_END__ "unchanged",opt);
-//             }
-//         } else{
-//             show_message("%s: " "not found in the zip",opt);
-//         }
-//     }
-// }
-
-
 void process_status(int argc,char** argv){
 
     struct args_flag flags[] = {
@@ -160,39 +136,6 @@ void process_status(int argc,char** argv){
     free_hash_map(hash_map_current_state);
 
     commit_free_commit(&head_commit_obj);
+
+    zip_close(archive);
 }
-
-// enum path_status status_get_path_status(struct zip* archive,char* path){
-//     char* head_commit = commit_get_head_commit(archive);
-
-//     bool path_ispresent_inhead = false;
-//     bool path_ispresent_intree = false;
-
-//     char* path_hash_in_head = status_get_path_hash(path,head_commit,&path_ispresent_inhead);
-
-
-
-//     zip_file_t* file = zip_fopen(archive,path,0);
-
-//     char* path_hash_work_tree = sha256_zip_file_ng(file);
-
-//     if (path_hash_work_tree){
-//         path_ispresent_intree = true;
-//     }
-
-//     if (path_ispresent_inhead == false && path_ispresent_intree == false){
-//         return IRRELEVANT;
-//     } else if (path_ispresent_inhead == false){
-//         return CREATED;
-//     } else if (path_ispresent_intree == false){
-//         return DELETED;
-//     } else{
-//         if (strcmp(path_hash_in_head,path_hash_work_tree) == 0){
-//             return UNCHANGED;
-//         } else return MODIFIED;
-//     }
-// }
-
-// char* status_get_path_hash(char* path,char* commit_id,bool* path_ispresent_inhead){
-    
-// }

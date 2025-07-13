@@ -140,7 +140,7 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
             prefix_size = 0;
 
             space_found = false;
-        } else if (ch == ' '){
+        } else if (ch == ' ' && space_found == false){
             space_found = true;
             *(prefix + prefix_size) = ch;
             prefix_size++;
@@ -148,6 +148,7 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
             continue;
         } else{
             if (space_found == true){
+                *(prefix + prefix_size) = '\0';
                 *(line + line_size) = ch;
                 line_size++;
             } else{
@@ -476,15 +477,12 @@ char* commit_get_parent_commit_id(struct zip* archive,char *commit_id){
 }
 
 void commit_free_commit(struct jvc_commit** commit){
-    if (*commit){
-        __RW_MEMFREE__((*commit)->id);
-        __RW_MEMFREE__((*commit)->message);
-
-        commit_free_commit(&(*commit)->parent);
-
-        tree_free(&((*commit)->tree));
+    __RW_MEMFREE__((*commit)->id);
+    __RW_MEMFREE__((*commit)->message);
+    if ((*commit)->parent != NULL){
+        commit_free_commit(&((*commit)->parent));
     }
-
+    tree_free(&((*commit)->tree));
     __RW_MEMFREE__(*commit);
 
     commit = NULL;
