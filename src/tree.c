@@ -66,6 +66,8 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id){
 }
 
 void tree_free(struct jvc_tree** tree){
+    if (!tree && !(*tree)) return;
+    
     __RW_MEMFREE__((*tree)->id);
     free_hash_map((*tree)->map);
 

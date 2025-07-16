@@ -54,8 +54,9 @@ int main(int argc,char** argv) {
         process_fingerprint(argc,argv);
     } else if (strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
         show_help();
-    }
-    else{
+    } else if (strcmp(argv[1],"--version") == 0 || strcmp(argv[1],"-v") == 0){
+        show_message(__CONSTANTS_RW_VERSION__);
+    } else{
         printf("%d\n",regex_is_matching("abc/pqr","abc/pqr")); //1
         printf("%d\n",regex_is_matching("a*","ab")); //1
         printf("%d\n",regex_is_matching("a?","ab")); //1

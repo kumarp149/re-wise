@@ -63,4 +63,6 @@ and a pointer to a tree file*/
 
 #define __CONSTANTS_RW_COLOR_RED_BRIGHT__ "[1;31m"
 
+#define __CONSTANTS_RW_VERSION__ "1.01"
+
 #endif

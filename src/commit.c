@@ -482,7 +482,10 @@ void commit_free_commit(struct jvc_commit** commit){
     if ((*commit)->parent != NULL){
         commit_free_commit(&((*commit)->parent));
     }
-    tree_free(&((*commit)->tree));
+
+    if ((*commit)->tree != NULL){
+        tree_free(&((*commit)->tree));
+    }
     __RW_MEMFREE__(*commit);
 
     commit = NULL;
