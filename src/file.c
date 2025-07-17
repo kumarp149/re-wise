@@ -25,7 +25,8 @@ void show_help(){
     show_message("  restore: restore the paths from a particular commit");
     show_message("  fingerprint: get the hash of the file from a commit/tag or worktree");
     show_message("  log: display the commits");
-    show_message("  tag: tag a particular commit with a name\n");
+    show_message("  tag: tag a particular commit with a name");
+    show_message("  diff: get the diff between two commits\n");
 
     show_message("use \"rw <command> --help\" to get command specific help");
 }

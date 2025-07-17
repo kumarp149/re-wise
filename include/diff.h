@@ -15,7 +15,6 @@
   X("--help","-h" , "help", "display this usage", (__DIFF_FLAGBIT_HELP_)) \
 
   #define __DIFF_ARGS__ \
-  X(false,"--path","-p","path","compares the given pathspecs in both commits",(1<<20)) \
   X(true,"--commits","-c","two commits for diff","two commits for the difference",2) \
 
 
