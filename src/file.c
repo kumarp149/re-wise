@@ -12,6 +12,7 @@
 #include "../include/tag.h"
 #include "../include/log.h"
 #include "../include/fingerprint.h"
+#include "../include/diff.h"
 
 #define BUFFER_SIZE 8192
 
@@ -52,7 +53,10 @@ int main(int argc,char** argv) {
         process_log(argc,argv);
     } else if (strcmp(argv[1],"fingerprint") == 0){
         process_fingerprint(argc,argv);
-    } else if (strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
+    } else if (strcmp(argv[1],"diff") == 0){
+        process_diff(argc,argv);
+    } 
+    else if (strcmp(argv[1],"--help") == 0 || strcmp(argv[1],"-h") == 0){
         show_help();
     } else if (strcmp(argv[1],"--version") == 0 || strcmp(argv[1],"-v") == 0){
         show_message(__CONSTANTS_RW_VERSION__);

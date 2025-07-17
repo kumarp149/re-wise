@@ -100,6 +100,7 @@ char* commit_get_head_commit(struct zip* archive){
 }
 
 struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
+    if (id == NULL) return NULL;
     char* commit_blob_path = blob_get_path(id);
     char* line = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_M);
     char* prefix = (char *)malloc(sizeof(char)*__CONSTANT_RW_STRING_BUFFER_S);

@@ -3,7 +3,7 @@ BUILD_ENV ?= local
 
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
 		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o bin/restore.o \
-		  bin/tag.o bin/log.o bin/fingerprint.o
+		  bin/tag.o bin/log.o bin/fingerprint.o bin/diff.o
 CC = gcc
 
 BIN_DIR := bin
@@ -42,7 +42,7 @@ bin/track.o: src/track.c include/track.h include/structures.h include/sha256.h i
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/file.o: src/file.c include/print.h include/track.h include/utils.h include/status.h include/regex.h include/commit.h include/restore.h \
-			include/global.h include/constants.h include/tag.h include/log.h
+			include/global.h include/constants.h include/tag.h include/log.h include/diff.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/sha256.o: src/sha256.c include/sha256.h  include/print.h include/global.h include/constants.h
@@ -84,4 +84,7 @@ bin/log.o: src/log.c include/log.h include/commit.h include/args.h include/print
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/fingerprint.o: src/fingerprint.c include/fingerprint.h include/args.h include/constants.h include/commit.h include/tag.h
+	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
+
+bin/diff.o: src/diff.c include/diff.h include/args.h include/constants.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
