@@ -185,11 +185,12 @@ void process_track(int argc,char** argv){
 
     track(archive,command_flags,options_array,&tree,&commit);
 
-    show_message("started tracking the archive. %s is the root commit",commit->id);
-
     zip_close(archive);
 
-    commit_free_commit(&commit);
+    if (commit != NULL && commit->id != NULL){
+        show_message("started tracking the archive. %s is the root commit",commit->id);
+        commit_free_commit(&commit);
+    }
 
     return;
 }

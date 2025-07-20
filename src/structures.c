@@ -334,3 +334,16 @@ void map_get_difference(hash_map* first, hash_map* second, hash_map* only_first,
         }
     }
 }
+
+size_t hash_map_getsize(hash_map* map){
+    size_t res = 0;
+    for (int i=0;i<JVC_HASHMAP_SIZE;++i){
+        hash_node* node = map->buckets[i];
+        while(node){
+            res++;
+            node = node->next;
+        }
+    }
+
+    return res;
+}

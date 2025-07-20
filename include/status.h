@@ -35,5 +35,6 @@ enum path_status{
   IRRELEVANT
 };
 
+bool status_is_worktree_clean(struct zip* archive,struct hash_map* worktree);
 
 #endif

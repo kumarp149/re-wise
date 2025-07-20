@@ -139,3 +139,31 @@ void process_status(int argc,char** argv){
 
     zip_close(archive);
 }
+
+bool status_is_worktree_clean(struct zip* archive,struct hash_map* worktree){
+    char* commit_resolve_message;
+    struct jvc_commit* head_commit = commit_get_commit(archive,commit_resolve_commit(archive,"HEAD",&commit_resolve_message));
+
+    size_t worktree_size = 0;
+    size_t revision_tree_size = hash_map_getsize(head_commit->tree->map);
+
+    for (int i=0;i<JVC_HASHMAP_SIZE;++i){
+        hash_node* node = worktree->buckets[i];
+
+        while(node){
+            worktree_size++;
+
+            char* hash_in_head_commit = hash_map_get(head_commit->tree->map,node->key);
+            if (hash_in_head_commit == NULL || strcmp(hash_in_head_commit,node->value) != 0){ 
+                return false;
+            }
+
+
+            node = node->next;
+        }
+    }
+
+    if (worktree_size != revision_tree_size) return false;
+
+    return true;
+}

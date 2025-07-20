@@ -74,3 +74,27 @@ void tree_free(struct jvc_tree** tree){
     __RW_MEMFREE__(*tree);
     tree = NULL;
 }
+
+struct hash_map* tree_getworktree(struct zip* archive){
+    struct hash_map* worktree = (struct hash_map*) malloc(sizeof(struct hash_map));
+
+    zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
+
+    for (zip_uint64_t i = 0; i < num_entries; i++){
+        const char *name = zip_get_name(archive, i,  ZIP_FL_UNCHANGED);
+
+        if (name && strncmp(name, __CONSTANTS_RW_BASE__, strlen(__CONSTANTS_RW_BASE__)) == 0){
+            continue;
+        } else{
+            zip_file_t* file = zip_fopen(archive,name,0);
+            char* file_hash = sha256_zip_file_ng(file);
+
+            hash_map_insert(worktree,name,file_hash);
+
+            __RW_MEMFREE__(file_hash);
+
+            zip_fclose(file);
+        }
+    }
+    return worktree;
+}

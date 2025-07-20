@@ -17,5 +17,7 @@ struct jvc_tree* tree_get_tree(struct zip* archive,char* id);
 
 void tree_free(struct jvc_tree** tree);
 
+struct hash_map* tree_getworktree(struct zip* archive);
+
 
 #endif
