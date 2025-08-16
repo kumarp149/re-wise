@@ -165,6 +165,12 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 
     zip_fclose(file);
 
+    if (commit->parent){
+        commit->parent->message = NULL;
+        commit->parent->parent = NULL;
+        commit->parent->tree = NULL;
+    }
+
     return commit;
 }
 
