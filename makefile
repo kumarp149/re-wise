@@ -3,7 +3,7 @@ BUILD_ENV ?= local
 
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
 		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o bin/restore.o \
-		  bin/tag.o bin/log.o bin/fingerprint.o bin/diff.o bin/checkout.o
+		  bin/tag.o bin/log.o bin/fingerprint.o bin/diff.o bin/checkout.o bin/stdutils.o
 CC = clang
 
 BIN_DIR := bin
@@ -62,7 +62,7 @@ bin/tree.o: src/tree.c include/tree.h include/structures.h  \
 bin/blob.o: src/blob.c include/blob.h  include/print.h include/commit.h include/global.h include/constants.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/args.o: src/args.c include/args.h include/print.h include/global.h include/constants.h
+bin/args.o: src/args.c include/args.h include/print.h include/global.h include/constants.h include/stdutils.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/status.o: src/status.c include/status.h  include/args.h include/commit.h include/print.h include/global.h include/constants.h
@@ -90,4 +90,7 @@ bin/diff.o: src/diff.c include/diff.h include/args.h include/constants.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/checkout.o: src/checkout.c include/checkout.h include/args.h include/commit.h include/tree.h include/status.h include/blob.h include/utils.h
+	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
+
+bin/stdutils.o: src/stdutils.c include/stdutils.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@

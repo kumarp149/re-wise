@@ -152,7 +152,7 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
     }
     for (size_t i=0;i<integer_args_size;++i){
         char* c = integer_args + i;
-        if (*(option_counts + (c[0] - 'a')) > 0 && (!(is_valid_integer(option_values[c[0]-'a'][0])) || (atoi(option_values[c[0]-'a'][0])) < 0)){
+        if (*(option_counts + (c[0] - 'a')) > 0 && (!(std_is_valid_integer(option_values[c[0]-'a'][0])) || (atoi(option_values[c[0]-'a'][0])) < 0)){
             size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
 
             arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));

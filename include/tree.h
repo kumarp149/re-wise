@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "blob.h"
 #include "utils.h"
+#include "stdutils.h"
 
 struct jvc_tree{
     char* id;

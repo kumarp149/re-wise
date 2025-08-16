@@ -57,16 +57,27 @@ void commit_add_blob(struct zip* archive,struct jvc_commit* commit){
 
     char* blob_path = blob_get_path(commit->id);
 
-    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+    size_t sz = strlen((const char *) blob_path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) + 1;
 
     char* blob_type_path = (char *) malloc(sizeof(char) * sz);
 
-    blob_type_path[0] = '\0';
+    size_t blob_type_path_index = 0;
 
-    strcat(blob_type_path,blob_path);
-    strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+    memcpy(blob_type_path + blob_type_path_index,blob_path,strlen(blob_path));
 
-    blob_type_path[sz] = '\0';
+    blob_type_path_index += strlen(blob_path);
+
+    memcpy(blob_type_path + blob_type_path_index,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__));
+
+    blob_type_path_index += strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+
+    // blob_type_path[0] = '\0';
+
+    // strcat(blob_type_path,blob_path);
+    // strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+
+    blob_type_path[blob_type_path_index] = '\0';
 
     char* blob_content = (char *) malloc(sizeof(char)*__CONSTANTS_RW_STRING_BUFFER);
 
@@ -354,7 +365,7 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
         return NULL;
     }
 
-    size_t sz = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(identifier) + 1;
+    size_t sz = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(identifier) + 2;
 
     size_t index = 0;
 
