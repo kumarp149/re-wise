@@ -58,6 +58,8 @@ char* blob_get_type_path(const char* blob_id){
 
     *(blob_type_path + index) = '\0';
 
+    __RW_MEMFREE__(path);
+
     return blob_type_path;
 }
 

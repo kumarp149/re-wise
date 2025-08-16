@@ -34,7 +34,7 @@ and a pointer to a tree file*/
 
 #define JVC_BUFFER 8192
 
-#define __CONSTANTS_HASH_GENERATOR_SIZE__ 20000
+#define __CONSTANTS_HASH_GENERATOR_SIZE__ 200000
 
 #define __CONSTANTS_RW_STRING_BUFFER 50000
 

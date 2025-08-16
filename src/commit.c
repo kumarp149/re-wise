@@ -203,19 +203,15 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
 
             char* time = timer_timestamp();
 
-            free(time);
-
             sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
-            sha256_update_content(tree_generator,name,strlen(file_hash));
+            sha256_update_content(tree_generator,file_hash,strlen(file_hash));
             sha256_update_content(tree_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(tree_generator,time,strlen(time));
 
             time = timer_timestamp();
 
-            free(time);
-
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
-            sha256_update_content(commit_generator,name,strlen(file_hash));
+            sha256_update_content(commit_generator,file_hash,strlen(file_hash));
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
             sha256_update_content(commit_generator,name,strlen(name));
             sha256_update_content(commit_generator,__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__,strlen(__CONSTANTS_RW_HASH_GENERATOR_DELIMITER__));
@@ -229,17 +225,21 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
         while(node){
             char* path = blob_get_path(node->value);
 
-            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+            size_t blob_type_path_index = 0;
+
+            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) + 1;
 
             char* blob_type_path = (char *) malloc(sizeof(char) * sz);
 
-            blob_type_path[0] = '\0';
+            memcpy(blob_type_path+blob_type_path_index,path,strlen(path));
 
-            strcat(blob_type_path,path);
+            blob_type_path_index += strlen(path);
 
-            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
+            memcpy(blob_type_path+blob_type_path_index,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__));
+            
+            blob_type_path_index += strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
 
-            blob_type_path[sz] = '\0';
+            blob_type_path[blob_type_path_index] = '\0';
 
             copy_file_inzip_ng(archive,node->key,path);
 

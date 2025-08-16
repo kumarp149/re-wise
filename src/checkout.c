@@ -91,5 +91,11 @@ void process_checkout(int argc,char** argv){
     
     zip_close(archive);
 
+    // commit_free_commit(&commit);
+
+    // commit_free_commit(&head_commit);
+
+    // free_hash_map(worktree);
+
     return;
 }

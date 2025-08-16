@@ -29,8 +29,8 @@ bool is_probable_option(char* arg){
 
 void free_arg_errors(char** arg_errors,size_t arg_error_index){
     for (size_t i=0;i<arg_error_index;++i){
-        if (arg_errors[arg_error_index]){
-            __RW_MEMFREE__(arg_errors[arg_error_index]);
+        if (*(arg_errors + i)){
+            __RW_MEMFREE__(arg_errors[i]);
             arg_errors[arg_error_index] = NULL;
         }
     }
@@ -146,6 +146,7 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
 
             arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
             snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
+
             arg_error_index++;
         }
     }

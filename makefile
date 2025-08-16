@@ -4,7 +4,7 @@ BUILD_ENV ?= local
 objects = bin/structures.o bin/track.o bin/utils.o bin/file.o bin/sha256.o bin/timer.o bin/commit.o \
 		  bin/tree.o bin/blob.o bin/args.o bin/status.o bin/print.o bin/regex.o bin/restore.o \
 		  bin/tag.o bin/log.o bin/fingerprint.o bin/diff.o bin/checkout.o
-CC = gcc
+CC = clang
 
 BIN_DIR := bin
 
@@ -23,7 +23,7 @@ else ifeq ($(BUILD_ENV),ci)
 endif
 
 
-OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -O1 -fno-omit-frame-pointer
+OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -O1 -fno-omit-frame-pointer -fsanitize=address
 
 a.out: $(BIN_DIR) $(objects) makefile
 	$(CC) -g $(OPTIONS) $(objects) $(LIB) -o a.out
