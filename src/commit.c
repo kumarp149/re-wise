@@ -445,7 +445,7 @@ __NEXT:
 
     if (tildeIndex == strlen(identifier) || tildeIndex == 0) return NULL;
 
-    char* supposed_parent_commit_identifier = (char *)malloc(sizeof(tildeIndex+1));
+    char* supposed_parent_commit_identifier = (char *)malloc(sizeof(char)*(tildeIndex+1));
 
     strncpy(supposed_parent_commit_identifier, identifier, tildeIndex);
 

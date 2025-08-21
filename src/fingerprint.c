@@ -41,7 +41,7 @@ void fingerprint(struct zip* archive,char* commit_identifier,char* path){
             show_message("%s is not a valid commit",commit_id);
             return;
         }
-        commit = commit_get_commit(archive,commit_get_head_commit(archive));
+        commit = commit_get_commit(archive,commit_id);
 
         if (hash_map_get(commit->tree->map,path) != NULL){
             show_message(hash_map_get(commit->tree->map,path));

@@ -18,7 +18,7 @@ convention for arguments:
 */
 #define __ARGS_OPTION_TYPES__ 26
 #define __ARGS_ERROR_ARG_MORE_PROVIDED__ "error: more than necessary arguments provided for the option <%s>"
-#define __ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__ "error: more than necessary arguments provided for the option <%s>"
+#define __ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__ "error: argument <%s> is mandatory and it expects a value"
 #define __ARGS_ERROR_ARG_ATLEAST_ONE__ "error: option <%s> expects atleast one argument"
 #define __ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__ "error: option <%s> expects an argument"
 #define __ARGS_ERROR_ARG_UNKNOWNARG__ "error: unknown argument <%s> provided"

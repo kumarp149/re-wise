@@ -6,6 +6,7 @@
 #include "string.h"
 #include "commit.h"
 #include "zip.h"
+#include "stdutils.h"
 
 /*free the returned pointer after usage*/
 char* blob_get_path(const char* blob_id);

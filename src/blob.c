@@ -8,25 +8,15 @@ char* blob_get_path(const char* blob_id){
 
     char* blob_path = (char *)malloc(sizeof(char) * blob_path_size);
 
-    memcpy(blob_path + sz,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
+    std_append_chars(blob_path,&sz,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
 
-    sz += strlen(__CONSTANTS_RW_BASE__);
+    std_append_chars(blob_path,&sz,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
 
-    memcpy(blob_path + sz,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
+    std_append_chars(blob_path,&sz,(char*) blob_id,2);
 
-    sz += strlen(__CONSTANTS_RW_BLOBS__);
+    std_append_chars(blob_path,&sz,"/",1);
 
-    memcpy(blob_path + sz,blob_id,2);
-
-    sz += 2;
-
-    memcpy(blob_path + sz,"/",1);
-
-    sz += 1;
-
-    memcpy(blob_path + sz,blob_id+2,strlen(blob_id+2));
-
-    sz += strlen(blob_id+2);
+    std_append_chars(blob_path,&sz,(char*) blob_id+2,strlen(blob_id+2));
 
     *(blob_path + sz) = '\0';
 
