@@ -82,7 +82,7 @@ void tree_free(struct jvc_tree** tree){
 }
 
 struct hash_map* tree_getworktree(struct zip* archive){
-    struct hash_map* worktree = (struct hash_map*) malloc(sizeof(struct hash_map));
+    struct hash_map* worktree = create_hash_map();
 
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
@@ -95,7 +95,7 @@ struct hash_map* tree_getworktree(struct zip* archive){
             zip_file_t* file = zip_fopen(archive,name,0);
             char* file_hash = sha256_zip_file_ng(file);
 
-            hash_map_insert(worktree,name,file_hash);
+            hash_map_insert(worktree,name,strdup(file_hash));
 
             __RW_MEMFREE__(file_hash);
 

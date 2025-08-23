@@ -50,8 +50,12 @@ void process_checkout(int argc,char** argv){
     struct jvc_commit* commit = commit_get_commit(archive,commit_resolve_commit(archive,options_array['c'-'a'][0],&commit_resolve_message));
 
     if (commit == NULL){
-        show_message("no commit found with the given id");
-        return;
+        commit = commit_get_commit(archive,tag_resolve_tag(archive,options_array['c'-'a'][0],&commit_resolve_message));
+
+        if (commit == NULL){
+            show_message(commit_resolve_message);
+            return;
+        }
     }
 
     struct jvc_commit* head_commit = commit_get_commit(archive,commit_resolve_commit(archive,"HEAD",&commit_resolve_message));

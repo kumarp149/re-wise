@@ -89,7 +89,7 @@ bin/fingerprint.o: src/fingerprint.c include/fingerprint.h include/args.h includ
 bin/diff.o: src/diff.c include/diff.h include/args.h include/constants.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
-bin/checkout.o: src/checkout.c include/checkout.h include/args.h include/commit.h include/tree.h include/status.h include/blob.h include/utils.h
+bin/checkout.o: src/checkout.c include/checkout.h include/args.h include/commit.h include/tree.h include/status.h include/blob.h include/utils.h include/tag.h
 	$(CC) -g $(OPTIONS) -c $< $(INC) -o $@
 
 bin/stdutils.o: src/stdutils.c include/stdutils.h

@@ -8,6 +8,7 @@
 #include "status.h"
 #include "utils.h"
 #include "blob.h"
+#include "tag.h"
 
 #define __CHECKOUT_HELP__ __CONSTANTS_RW_PGMNAME__ " commit <archive> <arg> <val>"
 
