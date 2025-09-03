@@ -8,6 +8,10 @@ char* blob_get_path(const char* blob_id){
 
     char* blob_path = (char *)malloc(sizeof(char) * blob_path_size);
 
+    if (!blob_path){
+        return NULL;
+    }
+
     std_append_chars(blob_path,&sz,__CONSTANTS_RW_BASE__,strlen(__CONSTANTS_RW_BASE__));
 
     std_append_chars(blob_path,&sz,__CONSTANTS_RW_BLOBS__,strlen(__CONSTANTS_RW_BLOBS__));
@@ -31,6 +35,10 @@ char* blob_get_hash_atrevision(struct zip* archive,char* commit_id,char* path){
 
 char* blob_get_type_path(const char* blob_id){
     char* path = blob_get_path(blob_id);
+
+    if (!path){
+        return NULL;
+    }
 
     size_t sz = strlen(path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__) + 1;
 

@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "error.h"
+
 
 bool std_is_valid_integer(char* c);
 

@@ -10,7 +10,7 @@
 #include "global.h"
 #include "constants.h"
 #include <stdbool.h>
-#include "structures.h"
+#include "structs/hash-map.h"
 #include "print.h"
 
 /*get the sha256 hash of a file in zip*/

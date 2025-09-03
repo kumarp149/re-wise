@@ -27,19 +27,6 @@ bool is_probable_option(char* arg){
     return false;
 }
 
-void free_arg_errors(char** arg_errors,size_t arg_error_index){
-    for (size_t i=0;i<arg_error_index;++i){
-        if (*(arg_errors + i)){
-            __RW_MEMFREE__(arg_errors[i]);
-            arg_errors[arg_error_index] = NULL;
-        }
-    }
-
-    __RW_MEMFREE__(arg_errors);
-
-    arg_errors = NULL;
-}
-
 void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_size, struct args_valarg* valargs, size_t valargs_size, zip_t** archive, int* flag,char ***option_values, int *option_counts,void (*show_usage)(struct args_flag* flags,size_t flags_size,struct args_valarg* valargs,size_t valargs_size),int* proceed_further,int help_bit,char* integer_args,size_t integer_args_size){
     *proceed_further = 0;
     if (argc == 2){
@@ -50,9 +37,7 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
         return;
     }
 
-    char** arg_errors = (char **)malloc(sizeof(char *)*10);
-
-    size_t arg_error_index = 0;
+    struct strvec* arg_errors = strvec_init();
 
     int archive_open_error = 0;
 
@@ -97,79 +82,43 @@ void processArgs(int argc,char** argv, struct args_flag* flags, size_t flags_siz
             i = start;
 
             if (countArgs > cur_valarg->maxCount){
-                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MORE_PROVIDED__,cur_valarg->short_description);
-
-                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-
-                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MORE_PROVIDED__, cur_valarg->short_description);
-
-                arg_error_index++;
+                strvec_pushf(arg_errors,__ARGS_ERROR_ARG_MORE_PROVIDED__,cur_valarg->short_description);
             } else if (cur_valarg->mandatory == true && countArgs <= 0){
                 if (cur_valarg->maxCount == 1){
-                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
-
-                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-
-                    snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
-
-                    arg_error_index++;
+                    strvec_pushf(arg_errors,__ARGS_ERROR_ARG_MANDATORY_NOTPROVIDED__,cur_valarg->short_description);
                 } else{
-                    size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
-
-                    arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-
-                    snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
-
-                    arg_error_index++;
+                    strvec_pushf(arg_errors,__ARGS_ERROR_ARG_ATLEAST_ONE__,cur_valarg->short_description);
                 }
             } else if (countArgs == 0){
-                size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
-
-                arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-
-                snprintf(arg_errors[arg_error_index], (size_t)len + 1, __ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
-                arg_error_index++;
+                strvec_pushf(arg_errors,__ARGS_ERROR_ARG_NONMANDATORY_NOTPROVIDED__,cur_valarg->short_description);
             }
         } else{
-            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
-
-            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
-            arg_error_index++;
+            strvec_pushf(arg_errors,__ARGS_ERROR_ARG_UNKNOWNARG__,arg);
         }
     }
 
     for (size_t i=0;i<valargs_size;++i){
         char *c = ((valargs+i)->shortId) + 1;
         if ((valargs+i)->mandatory == true && *(option_counts + (c[0] - 'a')) == 0){
-            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
-
-            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
-
-            arg_error_index++;
+            strvec_pushf(arg_errors,__ARGS_ERROR_ARG_MANDATORY_NOTGIVEN__,(valargs+i)->short_description);
         }
     }
     for (size_t i=0;i<integer_args_size;++i){
         char* c = integer_args + i;
         if (*(option_counts + (c[0] - 'a')) > 0 && (!(std_is_valid_integer(option_values[c[0]-'a'][0])) || (atoi(option_values[c[0]-'a'][0])) < 0)){
-            size_t len = (size_t) snprintf(NULL,0,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
-
-            arg_errors[arg_error_index] = (char *) malloc(sizeof(char)*(len+1));
-            snprintf(arg_errors[arg_error_index], (size_t)len + 1,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
-            arg_error_index++;
+            strvec_pushf(arg_errors,__ARGS_ERROR_ARG_NUMERIC_ARG__,(valargs+i)->short_description);
         }
     }
     if (((*flag) & (1 << help_bit)) != 0){
         __ARGS_SHOW_USAGE_;
         goto __RET;
-    } else if (arg_error_index > 0){
-        show_message(arg_errors[0]);
+    } else if (arg_errors->len > 0){
+        show_message(arg_errors->v[0]);
         __ARGS_SHOW_USAGE_;
         goto __RET;
     }
     *proceed_further = 1;
 __RET:
-    free_arg_errors(arg_errors,arg_error_index);
+    strvec_free(&arg_errors);
     return;
 }

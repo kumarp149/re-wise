@@ -10,6 +10,7 @@
 #include "global.h"
 #include "utils.h"
 #include "stdutils.h"
+#include "structs/strvec.h"
 
 /*
 convention for arguments:
