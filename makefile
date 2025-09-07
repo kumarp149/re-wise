@@ -39,6 +39,9 @@ bin/%.o: src/%.c include/%.h
 
 -include $(DEPS)
 
+run:
+	bin/a.out $(ARGS)
+
 
 # BUILD_ENV ?= local
 

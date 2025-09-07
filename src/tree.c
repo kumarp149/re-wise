@@ -13,11 +13,6 @@ void tree_add_blob(struct zip* archive, struct jvc_tree* tree){
 
     std_append_chars(blob_type_path,&blob_type_index,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__));
 
-    // blob_type_path[0] = '\0';
-
-    // strcat(blob_type_path,blob_path);
-    // strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
-
     blob_type_path[blob_type_index] = '\0';
 
     size_t blob_size = 0;
