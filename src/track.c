@@ -77,27 +77,8 @@ void track(struct zip* archive, int flags,char ***option_values,struct jvc_tree*
     for (int i=0;i<JVC_HASHMAP_SIZE;++i){
         hash_node* node = map_path_hash->buckets[i];
         while(node){
-            char* path = blob_get_path(node->value);
-
-            size_t sz = strlen((const char *) path) + strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
-
-            char* blob_type_path = (char *) malloc(sizeof(char) * sz);
-
-            blob_type_path[0] = '\0';
-
-            strcat(blob_type_path,path);
-
-            strcat(blob_type_path,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
-
-            blob_type_path[sz] = '\0';
-
-            copy_file_inzip_ng(archive,node->key,path);
-
-            write_to_file_inzip_ng(archive,blob_type_path,__CONSTANTS_RW_BLOB_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOB_IDENTIFIER__));
-
+            copy_file_from_worktree(archive,node->value);
             node = node->next;
-
-            __RW_MEMFREE__(path);
         }
     }
 

@@ -187,7 +187,7 @@ struct jvc_commit* commit_get_commit(struct zip* archive,char *id){
 
 void create_new_commit(struct zip* archive,char ***option_values,int command_flags){
     char* head_commit_id = commit_get_head_commit(archive);
-    
+
     struct jvc_commit* head_commit = commit_get_commit(archive,head_commit_id);
 
     hash_map* head_map = head_commit->tree->map;
@@ -214,7 +214,7 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
             if ((file_hash_inhead == NULL) || (strcmp(file_hash_inhead,file_hash) != 0)){
                 is_archived_changed = true;
             }
-            
+
             hash_map_insert(path_map,name,file_hash);
             zip_fclose(file);
 
@@ -253,7 +253,7 @@ void create_new_commit(struct zip* archive,char ***option_values,int command_fla
             blob_type_path_index += strlen(path);
 
             memcpy(blob_type_path+blob_type_path_index,__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__,strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__));
-            
+
             blob_type_path_index += strlen(__CONSTANTS_RW_BLOBTYPE_IDENTIFIER__);
 
             blob_type_path[blob_type_path_index] = '\0';
@@ -325,7 +325,7 @@ void process_commit(int argc,char** argv){
     create_new_commit(archive,options_array,command_flags);
 
     zip_close(archive);
-    
+
     return;
 }
 
@@ -394,11 +394,11 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     identifier_prefix[index] = '\0';
 
     int count = 0;
-    
+
     zip_uint64_t num_entries = (zip_uint64_t) zip_get_num_entries(archive, 0);
 
     size_t prefix_len = strlen(identifier_prefix);
-    
+
     char* commit_blob_path;
 
     for (zip_uint64_t i = 0; i < num_entries; ++i){
@@ -433,7 +433,7 @@ char* commit_resolve_commit(struct zip* archive,char *identifier,char** message)
     }
 
     char* commit_id = blob_get_commitid(commit_blob_path);
-    
+
     return commit_id;
 
 __NEXT:
@@ -465,7 +465,7 @@ __NEXT:
         //printf("iteration for index: %d\n",(int) i);
         if ('0' <= identifier[i] && identifier[i] <= '9'){
             level += mul * ((size_t) (identifier[i]-'0'));
-            
+
             mul = mul*10;
         } else{
             return NULL;
@@ -507,4 +507,78 @@ void commit_free_commit(struct jvc_commit** commit){
     __RW_MEMFREE__(*commit);
 
     commit = NULL;
+}
+
+
+void commit_add_blob_ng(struct zip* archive,struct jvc_commit* commit){
+    struct blob* commit_blob_to_write = (struct blob *)malloc(sizeof(struct blob));
+
+    commit_blob_to_write->id = strdup(commit->id);
+    commit_blob_to_write->type = 2;
+
+    size_t bytes_to_alloc = 0;
+
+    size_t _index = 0;
+
+    size_t _temp = 0;
+
+    bytes_to_alloc += strlen(__COMMIT_HEADER__) + strlen(__CONSTANTS_RW_NEWLINE__);
+
+    bytes_to_alloc += strlen(commit->id) + strlen(__CONSTANTS_RW_NEWLINE__);
+
+    bytes_to_alloc += strlen(__COMMIT_TREE_PREFIX__) + strlen(commit->tree->id) + strlen(__CONSTANTS_RW_NEWLINE__);
+
+    bytes_to_alloc += strlen(__COMMIT_PARENT_PREFIX__) + strlen(commit->parent->id) + strlen(__CONSTANTS_RW_NEWLINE__);
+
+    bytes_to_alloc += strlen(__COMMIT_MESSAGE_PREFIX__) + strlen(commit->message) + 1;
+
+    commit_blob_to_write->content = (char *)malloc(bytes_to_alloc * (sizeof(char)));
+
+    _temp = strlen(__COMMIT_HEADER__) + strlen(__CONSTANTS_RW_NEWLINE__);
+    std_append_chars(commit_blob_to_write->content,&_index,__COMMIT_HEADER__ __CONSTANTS_RW_NEWLINE__,_temp);
+    _index += _temp;
+
+    _temp = strlen(commit->id);
+    std_append_chars(commit_blob_to_write->content,&_index,commit->id,_temp);
+    _index += _temp;
+
+    _temp = strlen(__CONSTANTS_RW_NEWLINE__);
+    std_append_chars(commit_blob_to_write->content,&_index,__CONSTANTS_RW_NEWLINE__,_temp);
+    _index += _temp;
+
+    _temp = strlen(__COMMIT_TREE_PREFIX__);
+    std_append_chars(commit_blob_to_write->content,&_index,__COMMIT_TREE_PREFIX__,_temp);
+    _index += _temp;
+
+    _temp = strlen(commit->tree->id);
+    std_append_chars(commit_blob_to_write->content,&_index,commit->tree->id,_temp);
+    _index += _temp;
+
+    _temp = strlen(__CONSTANTS_RW_NEWLINE__);
+    std_append_chars(commit_blob_to_write->content,&_index,__CONSTANTS_RW_NEWLINE__,_temp);
+    _index += _temp;
+
+    _temp = strlen(__COMMIT_PARENT_PREFIX__);
+    std_append_chars(commit_blob_to_write->content,&_index,__COMMIT_PARENT_PREFIX__,_temp);
+    _index += _temp;
+
+    _temp = strlen(commit->parent->id);
+    std_append_chars(commit_blob_to_write->content,&_index,commit->parent->id,_temp);
+    _index += _temp;
+
+    _temp = strlen(__CONSTANTS_RW_NEWLINE__);
+    std_append_chars(commit_blob_to_write->content,&_index,__CONSTANTS_RW_NEWLINE__,_temp);
+    _index += _temp;
+
+    _temp = strlen(__COMMIT_MESSAGE_PREFIX__);
+    std_append_chars(commit_blob_to_write->content,&_index,__COMMIT_MESSAGE_PREFIX__,_temp);
+    _index += _temp;
+
+    _temp = strlen(commit->message);
+    std_append_chars(commit_blob_to_write->content,&_index,commit->message,_temp);
+    _index += _temp;
+
+    *(commit_blob_to_write->content + _index) = '\0';
+
+    blob_write_blob(commit_blob_to_write, archive);
 }

@@ -14,6 +14,7 @@
 #define __COMMIT_TREE_PREFIX__ "tree: "
 #define __COMMIT_PARENT_PREFIX__ "parent: "
 #define __COMMIT_MESSAGE_PREFIX__ "message: "
+#define __COMMIT_HEADER__ "COMMIT"
 
 #define __COMMIT_HELP__ __CONSTANTS_RW_PGMNAME__ " commit <archive> <arg> <val>"
 
@@ -35,6 +36,8 @@ struct jvc_commit{
     char* message;
     //need to include timestamp too
 };
+
+void commit_add_blob_ng(struct zip* file,struct jvc_commit* commit);
 
 void commit_add_blob(struct zip* file,struct jvc_commit* commit);
 

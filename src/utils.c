@@ -388,3 +388,85 @@ char* read_from_file_inzip_ng(zip_t* archive, const char* file_path) {
     zip_fclose(file);
     return buffer;
 }
+
+void copy_file_from_worktree(struct zip* archive,char* path){
+    char* file_hash = sha256_zip_file_ng(path);
+
+    char* supposed_blob_path = blob_get_path(file_hash);
+
+    if (file_exists_inzip_ng(archive,supposed_blob_path)) return;
+
+    struct blob* blob = (struct blob *) malloc(sizeof(blob));
+
+    blob->type = 1;
+    blob->content = NULL;
+    blob->id = file_hash;
+    blob->src = path;
+
+    blob_write_blob(blob,archive);
+
+    return;
+}
+
+static zip_int64_t copy_object_callback(void *ud, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
+    struct object_to_worktree_ctx* ctx = (struct object_to_worktree_ctx *)ud;
+
+    size_t bytes_written = 0;
+
+    switch (cmd){
+        case ZIP_SOURCE_OPEN:
+            return 0;
+        case ZIP_SOURCE_READ:
+            zip_int64_t n = zip_fread(ctx->zf, data, __BUFFERSIZE_OBJECT_TO_WORKTREE__);
+
+            if (n == 0){
+                ctx->eof = 1;
+                return 0;
+            } else if (n < 0){
+                return -1;
+            } else{
+                return n;
+            }
+        
+    }
+
+    size_t bytes_written = 0;
+
+    size_t _temp = 0;
+
+    switch(cmd){
+        case ZIP_SOURCE_OPEN:
+            /* writes the type of the blob (OBJECT, COMMIT, TREE)*/
+            
+
+        case ZIP_SOURCE_READ:
+
+        case ZIP_SOURCE_CLOSE:
+            return 0;
+
+        case ZIP_SOURCE_STAT:{
+            struct zip_stat* st = (struct zip_stat *)data;
+            zip_stat_init(st);
+            return sizeof(*st);
+        }
+
+        case ZIP_SOURCE_ERROR:
+            return 0;
+
+        case ZIP_SOURCE_FREE:
+            zip_fclose(ctx->zf);
+            __RW_MEMFREE__(ctx);
+
+            return 0;
+
+        default:
+            return -1;
+    }
+    return -1;
+}
+
+void copy_object_file(struct zip* archive,char* obj_id,char* path){
+    
+}
+
+

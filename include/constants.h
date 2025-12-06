@@ -31,6 +31,8 @@ and a pointer to a tree file*/
 
 #define __CONSTANTS_RW_HEAD_IDENTIFIER_ "HEAD"
 
+#define __CONSTANTS_RW_NEWLINE__ "\r\n"
+
 
 #define JVC_BUFFER 8192
 
