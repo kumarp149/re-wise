@@ -15,10 +15,18 @@ struct blob{
     char* src;
 };
 
-struct copy_ctx{
-    struct blob* blob;
+struct copy_ctx {
+    struct blob *blob;
     zip_file_t *zf;
-    int eof;
+
+    size_t header_len;
+    char *header;
+    size_t header_offset;
+
+    size_t content_offset;
+    size_t content_len;   // only for memory blobs
+
+    int header_done;
 };
 
 
@@ -39,6 +47,7 @@ char* blob_get_commitid(char *commit_object_path);
 
 void blob_write_blob(struct blob* blob,struct zip* archive);
 
+//write the blob
 int blob_get_type(struct zip* archive,char *id);
 
 #endif

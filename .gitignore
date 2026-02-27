@@ -9,3 +9,5 @@ archive/*
 **/*.sh
 **/*.jar
 **/*.d
+Doxyfile
+docs/*

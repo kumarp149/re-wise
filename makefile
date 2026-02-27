@@ -18,7 +18,8 @@ else ifeq ($(BUILD_ENV),ci)
 	INC = -Ideps/openssl/include/ -Ideps/libzip/include/
 endif
 
-OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -O1 -fno-omit-frame-pointer -fsanitize=address -O2 -MMD -MP
+#OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -O1 -fno-omit-frame-pointer -fsanitize=address -O2 -MMD -MP
+OPTIONS = -Wall -Wextra -Werror -Wconversion -Wno-error=deprecated-declarations -fsanitize=address
 
 SRC := $(shell find src -name '*.c')
 HEADER := $(shell find include -name '*.h')
@@ -41,6 +42,8 @@ bin/%.o: src/%.c include/%.h
 
 run:
 	bin/a.out $(ARGS)
+clean:
+	rm -rf bin/*
 
 
 # BUILD_ENV ?= local

@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "openssl/sha.h"
 #include <string.h>
+#include "print.h"
 
 struct sha256_generator{
     char* data;

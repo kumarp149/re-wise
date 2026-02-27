@@ -3,6 +3,28 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int build_header(struct copy_ctx *ctx) {
+    size_t id_len = strlen(ctx->blob->id);
+
+    ctx->header_len = 1 + 2 + id_len + 2;
+    ctx->header = malloc(ctx->header_len);
+    if (!ctx->header)
+        return -1;
+
+    size_t off = 0;
+
+    ctx->header[off++] = (char)(ctx->blob->type + '0');
+    memcpy(ctx->header + off, __CONSTANTS_RW_NEWLINE__, 2);
+    off += 2;
+
+    memcpy(ctx->header + off, ctx->blob->id, id_len);
+    off += id_len;
+
+    memcpy(ctx->header + off, __CONSTANTS_RW_NEWLINE__, 2);
+
+    return 0;
+}
+
 char* blob_get_path(const char* blob_id){
     size_t blob_path_size = strlen(__CONSTANTS_RW_BASE__) + strlen(__CONSTANTS_RW_BLOBS__) + strlen(blob_id) + 2;
 
@@ -86,111 +108,184 @@ char* blob_get_commitid(char *commit_object_path){
     return commit_id;
 }
 
-static zip_int64_t copy_callback(void *ud, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
+static zip_int64_t copy_callback(void *ud,
+                                 void *data,
+                                 zip_uint64_t len,
+                                 zip_source_cmd_t cmd)
+{
     struct copy_ctx *ctx = (struct copy_ctx *)ud;
 
-    size_t bytes_written = 0;
+    switch (cmd) {
 
-    size_t _temp = 0;
+    case ZIP_SOURCE_OPEN:
+        ctx->header_offset = 0;
+        ctx->content_offset = 0;
+        ctx->header_done = 0;
 
-    switch(cmd){
-        case ZIP_SOURCE_OPEN:
-            /* writes the type of the blob (OBJECT, COMMIT, TREE)*/
-            *((char *)data) = ctx->blob->type + '0';
-            bytes_written += 1;
-
-            /* writes the new line */
-            memcpy(data + bytes_written,__CONSTANTS_RW_NEWLINE__,2);
-            bytes_written += 2;
-
-            /* writes the id of the blob (basically sha256 hash of the object or commit or tree)*/
-            _temp = strlen(ctx->blob->id);
-            memcpy(data + bytes_written,ctx->blob->id,_temp);
-            bytes_written += _temp;
-
-            /* writes the new line */
-            memcpy(data + bytes_written,__CONSTANTS_RW_NEWLINE__,2);
-            bytes_written += 2;
-
-            ctx->eof = 0;
-            return (zip_int64_t) bytes_written;
-
-        case ZIP_SOURCE_READ:
-
-            if (ctx->blob->type == __BLOB_COMMITTYPE__ || ctx->blob->type == __BLOB_TREETYPE__){
-                if (!ctx->blob->content || ctx->eof > 0) return 0;
-
-                _temp = strlen(ctx->blob->content);
-                memcpy(data,ctx->blob->content,_temp);
-
-                bytes_written += _temp;
-
-                __RW_MEMFREE__(ctx->blob->content);
-
-                ctx->eof = 1;
-
-                return (zip_int64_t) ctx->blob->content;
-            }
-
-            if (ctx->eof == 1) return 0;
-            zip_int64_t n = zip_fread(ctx->zf, data, __BLOB_CHUNK_SIZE__);
-
-            if (n == 0){
-                ctx->eof = 1;
-                return 0;
-            } else if (n < 0){
+        if (ctx->header == NULL) {
+            if (build_header(ctx) < 0)
                 return -1;
-            }
-
-            return n;
-
-        case ZIP_SOURCE_CLOSE:
-            return 0;
-
-        case ZIP_SOURCE_STAT:{
-            struct zip_stat* st = (struct zip_stat *)data;
-            zip_stat_init(st);
-            return sizeof(*st);
         }
 
-        case ZIP_SOURCE_ERROR:
+        return 0;
+
+    case ZIP_SOURCE_READ: {
+        if (len == 0)
             return 0;
 
-        case ZIP_SOURCE_FREE:
+        char *out = (char *)data;
+        zip_uint64_t written = 0;
+
+        /* ---- Emit header first ---- */
+        if (!ctx->header_done) {
+            size_t remaining = ctx->header_len - ctx->header_offset;
+            size_t to_copy = remaining < len ? remaining : len;
+
+            memcpy(out,
+                   ctx->header + ctx->header_offset,
+                   to_copy);
+
+            ctx->header_offset += to_copy;
+            written += to_copy;
+
+            if (ctx->header_offset == ctx->header_len)
+                ctx->header_done = 1;
+
+            return (zip_int64_t) written;
+        }
+
+        /* ---- Emit content ---- */
+
+        /* Memory blob */
+        if (ctx->blob->type == __BLOB_COMMITTYPE__ ||
+            ctx->blob->type == __BLOB_TREETYPE__) {
+
+            if (!ctx->blob->content)
+                return 0;
+
+            if (ctx->content_len == 0)
+                ctx->content_len = strlen(ctx->blob->content);
+
+            size_t remaining =
+                ctx->content_len - ctx->content_offset;
+
+            if (remaining == 0)
+                return 0;
+
+            size_t to_copy =
+                remaining < len ? remaining : len;
+
+            memcpy(out,
+                   ctx->blob->content + ctx->content_offset,
+                   to_copy);
+
+            ctx->content_offset += to_copy;
+            return (zip_int64_t) to_copy;
+        }
+
+        /* File blob (streaming) */
+        if (ctx->zf) {
+            zip_uint64_t to_read =
+                len < __BLOB_CHUNK_SIZE__ ?
+                len : __BLOB_CHUNK_SIZE__;
+
+            zip_int64_t n =
+                zip_fread(ctx->zf, out, to_read);
+
+            if (n < 0)
+                return -1;
+
+            return n;  // 0 means EOF
+        }
+
+        return 0;
+    }
+
+    case ZIP_SOURCE_CLOSE:
+        return 0;
+
+    case ZIP_SOURCE_STAT: {
+        struct zip_stat *st = (struct zip_stat *)data;
+        zip_stat_init(st);
+        return sizeof(*st);
+    }
+
+    case ZIP_SOURCE_ERROR:
+        return 0;
+
+    case ZIP_SOURCE_FREE:
+        if (ctx->zf)
             zip_fclose(ctx->zf);
-            __RW_MEMFREE__(ctx);
 
-            return 0;
+        if (ctx->header)
+            free(ctx->header);
 
-        default:
-            return -1;
+        free(ctx);
+        return 0;
+
+    default:
+        return -1;
     }
-    return -1;
 }
+void blob_write_blob(struct blob *blob, struct zip *archive)
+{
+    struct copy_ctx *ctx =
+        malloc(sizeof(struct copy_ctx));
+    if (!ctx)
+        exit(1);
 
-void blob_write_blob(struct blob* blob,struct zip* archive){
-    struct copy_ctx* ctx = (struct copy_ctx *)malloc(sizeof(struct copy_ctx));
-
+    memset(ctx, 0, sizeof(*ctx));
     ctx->blob = blob;
-    ctx->eof = 0;
-    if (blob->type == __BLOB_OBJECTTYPE__){
-        zip_int64_t idx = zip_name_locate(archive, ctx->blob->src, 0);
-        zip_file_t *zf = zip_fopen_index(archive, (zip_uint64_t) idx, 0);
-        ctx->zf = zf;
+
+    if (blob->type == __BLOB_OBJECTTYPE__) {
+
+        zip_int64_t idx =
+            zip_name_locate(archive, blob->src, 0);
+
+        if (idx < 0) {
+            free(ctx);
+            exit(1);
+        }
+
+        ctx->zf =
+            zip_fopen_index(archive,
+                            (zip_uint64_t)idx,
+                            0);
+
+        if (!ctx->zf) {
+            free(ctx);
+            exit(1);
+        }
     }
 
-    zip_source_t *zs = zip_source_function_create(copy_callback, ctx, NULL);
-    if (!zs){
-        fprintf(stderr, "zip error");
-        __RW_MEMFREE__(ctx);
+    zip_source_t *zs =
+        zip_source_function_create(copy_callback,
+                                   ctx,
+                                   NULL);
+
+    if (!zs) {
+        if (ctx->zf)
+            zip_fclose(ctx->zf);
+        free(ctx);
         exit(1);
     }
 
-    if (zip_file_add(archive,blob_get_path(blob->id), zs, ZIP_FL_OVERWRITE | ZIP_FL_ENC_UTF_8) < 0){
-        fprintf(stderr, "zip error");
-        __RW_MEMFREE__(ctx);
-        exit(1);
+    if (zip_file_add(archive,
+                     blob_get_path(blob->id),
+                     zs,
+                     ZIP_FL_OVERWRITE |
+                     ZIP_FL_ENC_UTF_8) < 0) {
+
+        zip_source_free(zs);
+        return;
+    } else{
+        log_message("file created at: %s",blob_get_path(blob->id));
     }
+
+    zip_fclose(ctx->zf);
+
+    /* DO NOT call zip_source_close */
+    /* DO NOT free ctx */
 }
 
 int blob_get_type(struct zip* archive,char *id){

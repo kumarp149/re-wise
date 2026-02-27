@@ -514,7 +514,7 @@ void commit_add_blob_ng(struct zip* archive,struct jvc_commit* commit){
     struct blob* commit_blob_to_write = (struct blob *)malloc(sizeof(struct blob));
 
     commit_blob_to_write->id = strdup(commit->id);
-    commit_blob_to_write->type = 2;
+    commit_blob_to_write->type = __BLOB_COMMITTYPE__;
 
     size_t bytes_to_alloc = 0;
 

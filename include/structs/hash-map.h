@@ -9,6 +9,7 @@
 #include "../global.h"
 #include <string.h>
 #include <pthread.h>
+#include "../print.h"
 
 #define JVC_HASHMAP_SIZE 1024
 

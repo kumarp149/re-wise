@@ -20,6 +20,7 @@ struct object_to_worktree_ctx{
     char* object_id;
     zip_file_t *zf;
     bool eof;
+    int blob_type;
 };
 
 /*get the sha256 hash of a file in zip*/
@@ -54,8 +55,8 @@ hash_map* iterate_zip(struct zip* archive);
 
 char* read_from_file_inzip_ng(zip_t* archive, const char* file_path);
 
+/*copy a file from worktree*/
 void copy_file_from_worktree(struct zip* archive,char* path);
-
 
 /*copy the object file to worktree*/
 void copy_object_file(struct zip* archive,char* obj_id,char* path);

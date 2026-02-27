@@ -48,6 +48,7 @@ void sha256_update_content(struct sha256_generator* generator,const char* conten
         memcpy(generator->data + generator->sz,content,bytes_left);
         generator->sz += bytes_left;
     }
+    log_message("updated generator with %s",content);
     return;
 }
 
